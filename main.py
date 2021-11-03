@@ -1,7 +1,8 @@
 #from os import get_exec_path
 import time
-from object import *
-
+from Monster import Monster
+from Object import *
+from Player import *
 
 animation_rate = 0
     
@@ -12,11 +13,14 @@ def myRender():
     clear_canvas()
     #character.clip_draw(frame * 100, 100 * 1, 100, 100, x, 90)
     p1.rendering()
+    mob.rendering()
     update_canvas()
 
 
 def update():
+    global mob, p1
     p1.update()
+    mob.update()
     # print(player.animation_frame)
 
 
@@ -107,8 +111,10 @@ def input():
 
 if __name__ == '__main__':
     open_canvas(1920,1080)
+    # p1 = player()
+    # p1.__init__('testname',100,10)
     p1 = player('testname',100,10)
-
+    mob = Monster(100,5,'baby_slime')
     while True:
         clear_canvas()
         input()
