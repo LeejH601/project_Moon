@@ -41,7 +41,7 @@ class Monster(Object):
         px, py = _player.Get_Locate()
         x, y = self.locate
         dx, dy = px - x, py - y
-        distance = dx**2 + dy*2
+        distance = dx**2 + dy**2
         if sqrt(distance) < 30:
             self.switch_state('ATTACK')
         else :

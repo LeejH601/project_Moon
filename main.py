@@ -12,8 +12,11 @@ def myRender():
     global p1
     clear_canvas()
     #character.clip_draw(frame * 100, 100 * 1, 100, 100, x, 90)
-    p1.rendering()
+    b_w, b_h = background.w, background.h
+    plus_size = 5
+    background.draw_to_origin(0-plus_size,0-plus_size,b_w*2+plus_size*2, b_h*2+plus_size*2)
     mob.rendering()
+    p1.rendering()
     update_canvas()
 
 
@@ -110,11 +113,12 @@ def input():
         
 
 if __name__ == '__main__':
-    open_canvas(1920,1080)
+    open_canvas(Screen_size[0], Screen_size[1])
     # p1 = player()
     # p1.__init__('testname',100,10)
-    p1 = player('testname',100,10)
+    p1 = player('testname',100,5)
     mob = Monster(100,5,'baby_slime')
+    background = load_image('sprite\stage\Background.png')
     while True:
         clear_canvas()
         input()
