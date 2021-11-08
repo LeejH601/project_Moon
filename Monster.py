@@ -6,27 +6,28 @@ type_of_monster = {'baby_slime' : 0, 'gollem_knight': 1}
 
 class Monster(Object):
     type = None
-
+    loaded_sprite_controlByType = []
     def __init__(self, _health, _speed, _type):
         self.name = _type
         self.type = type_of_monster[_type]
         super().__init__(self.name, _health, _speed)
         if self.type == 0:
-            
-            for i in range(0+1,10):
-                self.sprites[str(self.name)+states['ATTACK']+str(directs['down'])].append(load_image('sprite\monster\BabySlime_Attack_Down_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['ATTACK']+str(directs['up'])].append(load_image('sprite\monster\BabySlime_Attack_Up_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['ATTACK']+str(directs['left'])].append(load_image('sprite\monster\BabySlime_Attack_Left_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['ATTACK']+str(directs['right'])].append(load_image('sprite\monster\BabySlime_Attack_Right_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['IDLE']+str(directs['down'])].append(load_image('sprite\monster\Babyslime_idle.png'))
-            self.sprites[str(self.name)+states['IDLE']+str(directs['up'])].append(load_image('sprite\monster\Babyslime_idle.png'))
-            self.sprites[str(self.name)+states['IDLE']+str(directs['left'])].append(load_image('sprite\monster\Babyslime_idle.png'))
-            self.sprites[str(self.name)+states['IDLE']+str(directs['right'])].append(load_image('sprite\monster\Babyslime_idle.png'))
-            for i in range(0+1,6):
-                self.sprites[str(self.name)+states['MOVE']+str(directs['down'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['MOVE']+str(directs['up'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['MOVE']+str(directs['left'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['MOVE']+str(directs['right'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
+            if not 0 in Monster.loaded_sprite_controlByType:
+                for i in range(0+1,10):
+                    Monster.sprites[str(self.name)+states['ATTACK']+str(directs['down'])].append(load_image('sprite\monster\BabySlime_Attack_Down_'+str(i)+'.png'))
+                    Monster.sprites[str(self.name)+states['ATTACK']+str(directs['up'])].append(load_image('sprite\monster\BabySlime_Attack_Up_'+str(i)+'.png'))
+                    Monster.sprites[str(self.name)+states['ATTACK']+str(directs['left'])].append(load_image('sprite\monster\BabySlime_Attack_Left_'+str(i)+'.png'))
+                    Monster.sprites[str(self.name)+states['ATTACK']+str(directs['right'])].append(load_image('sprite\monster\BabySlime_Attack_Right_'+str(i)+'.png'))
+                Monster.sprites[str(self.name)+states['IDLE']+str(directs['down'])].append(load_image('sprite\monster\Babyslime_idle.png'))
+                Monster.sprites[str(self.name)+states['IDLE']+str(directs['up'])].append(load_image('sprite\monster\Babyslime_idle.png'))
+                Monster.sprites[str(self.name)+states['IDLE']+str(directs['left'])].append(load_image('sprite\monster\Babyslime_idle.png'))
+                Monster.sprites[str(self.name)+states['IDLE']+str(directs['right'])].append(load_image('sprite\monster\Babyslime_idle.png'))
+                for i in range(0+1,6):
+                    Monster.sprites[str(self.name)+states['MOVE']+str(directs['down'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
+                    Monster.sprites[str(self.name)+states['MOVE']+str(directs['up'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
+                    Monster.sprites[str(self.name)+states['MOVE']+str(directs['left'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
+                    Monster.sprites[str(self.name)+states['MOVE']+str(directs['right'])].append(load_image('sprite\monster\Babyslime_walk_'+str(i)+'.png'))
+                Monster.loaded_sprite_controlByType.append(0)
             pass
         elif self.type == 1:
             pass
@@ -37,7 +38,7 @@ class Monster(Object):
         self.direct = directs['down']
 
     def chase_state(self):
-        _player = Player.player._instance
+        _player = Player.Player._instance
         px, py = _player.Get_Locate()
         x, y = self.locate
         dx, dy = px - x, py - y
@@ -60,7 +61,7 @@ class Monster(Object):
 
     def move(self):
         x, y = self.locate
-        _player = Player.player._instance
+        _player = Player.Player._instance
         px,py = _player.Get_Locate()
         dx,dy = px - x, py - y
         d_size = math.sqrt(px ** 2 + py**2)

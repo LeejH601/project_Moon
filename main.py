@@ -116,7 +116,7 @@ if __name__ == '__main__':
     open_canvas(Screen_size[0], Screen_size[1])
     # p1 = player()
     # p1.__init__('testname',100,10)
-    p1 = player('testname',100,5)
+    p1 = Player('testname',100,5)
     mob = Monster(100,5,'baby_slime')
     background = load_image('sprite\stage\Background.png')
     while True:

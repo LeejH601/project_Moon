@@ -20,7 +20,7 @@ class Singleton():
 #     return cls._instance
 
 
-class player(Object, Singleton):
+class Player(Object, Singleton):
     flag_move = False
     Roll_count = 0
     Atk_count = 0
@@ -45,6 +45,8 @@ class player(Object, Singleton):
     correction_place.append(
                     [(0, 5),(-19, 5),(-15, 6),(-9, 0),(20, 17),(-11, 5),(-11, 2),(-8, 0),(0, 8),(-15, 5),(-11, 5),(-7, 6),(27, 8),(25, 10),(25, 10),(25, 10),(25, 10),
                     ])
+
+    loaded_sprite_List = []
     
     # def __new__(cls, *args, **kwargs):
     #     if not hasattr(cls, 'instance'):
@@ -65,46 +67,59 @@ class player(Object, Singleton):
 
     def __init__(self, name, _health, _speed):
         super().__init__(name, _health, _speed)
-        for i in range(0+1,10):
-            self.sprites[str(self.name)+states['IDLE']+str(directs['down'])].append(load_image('sprite\Will_Idle_Down_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['IDLE']+str(directs['up'])].append(load_image('sprite\Will_Idle_Up_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['IDLE']+str(directs['left'])].append(load_image('sprite\Will_Idle_Left_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['IDLE']+str(directs['right'])].append(load_image('sprite\Will_Idle_Right_'+str(i)+'.png'))
-        for i in range(0+1,9):
-            self.sprites[str(self.name)+states['MOVE']+str(directs['down'])].append(load_image('sprite\will animation cycle front dungeon_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['MOVE']+str(directs['up'])].append(load_image('sprite\will walking cycle back_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['MOVE']+str(directs['left'])].append(load_image('sprite\will_walking cycle_left side0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['MOVE']+str(directs['right'])].append(load_image('sprite\will_walking cycle_right side0'+str(i)+'.png'))
+        if not 'IDLE' in Player.loaded_sprite_List:
+            for i in range(0+1,10):
+                Player.sprites[str(self.name)+states['IDLE']+str(directs['down'])].append(load_image('sprite\Will_Idle_Down_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['IDLE']+str(directs['up'])].append(load_image('sprite\Will_Idle_Up_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['IDLE']+str(directs['left'])].append(load_image('sprite\Will_Idle_Left_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['IDLE']+str(directs['right'])].append(load_image('sprite\Will_Idle_Right_'+str(i)+'.png'))
+            Player.loaded_sprite_List.append('IDLE')
 
-            self.sprites[str(self.name)+states['ROLL']+str(directs['down'])].append(load_image('sprite\Will_Roll_Down_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['ROLL']+str(directs['up'])].append(load_image('sprite\Will_Roll_Up_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['ROLL']+str(directs['left'])].append(load_image('sprite\Will_Roll_Left_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['ROLL']+str(directs['right'])].append(load_image('sprite\Will_Roll_Right_'+str(i)+'.png'))
+        if not 'MOVE' in Player.loaded_sprite_List:
+            for i in range(0+1,9):
+                Player.sprites[str(self.name)+states['MOVE']+str(directs['down'])].append(load_image('sprite\will animation cycle front dungeon_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['MOVE']+str(directs['up'])].append(load_image('sprite\will walking cycle back_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['MOVE']+str(directs['left'])].append(load_image('sprite\will_walking cycle_left side0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['MOVE']+str(directs['right'])].append(load_image('sprite\will_walking cycle_right side0'+str(i)+'.png'))
 
-        for i in range(0+1,19):
-            self.sprites[str(self.name)+states['ATTACK']+str(directs['down'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Down_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['ATTACK']+str(directs['up'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Up_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['ATTACK']+str(directs['left'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Left_'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['ATTACK']+str(directs['right'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Right_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['ROLL']+str(directs['down'])].append(load_image('sprite\Will_Roll_Down_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['ROLL']+str(directs['up'])].append(load_image('sprite\Will_Roll_Up_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['ROLL']+str(directs['left'])].append(load_image('sprite\Will_Roll_Left_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['ROLL']+str(directs['right'])].append(load_image('sprite\Will_Roll_Right_'+str(i)+'.png'))
+            Player.loaded_sprite_List.append('MOVE')
 
-        for i in range(0+1,18):
-            if i != 15:
-                self.sprites[str(self.name)+states['SSWORD']+str(directs['down'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Down_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['SSWORD']+str(directs['up'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Up_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['SSWORD']+str(directs['left'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Left_'+str(i)+'.png'))
-                self.sprites[str(self.name)+states['SSWORD']+str(directs['right'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Right_'+str(i)+'.png'))
+        if not 'ATTACK' in Player.loaded_sprite_List:
+            for i in range(0+1,19):
+                Player.sprites[str(self.name)+states['ATTACK']+str(directs['down'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Down_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['ATTACK']+str(directs['up'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Up_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['ATTACK']+str(directs['left'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Left_'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['ATTACK']+str(directs['right'])].append(load_image('sprite\Will_ShortSwordCombo_Animation_Right_'+str(i)+'.png'))
+            Player.loaded_sprite_List.append('ATTACK')
 
-        for i in range(0, 6):
-            self.sprites[str(self.name)+states['SSHIELD']+str(directs['down'])].append(load_image('sprite\will_shield deffense down_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['SSHIELD']+str(directs['up'])].append(load_image('sprite\will_shield deffense up_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['SSHIELD']+str(directs['left'])].append(load_image('sprite\will_shield deffense left_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['SSHIELD']+str(directs['right'])].append(load_image('sprite\will_shield deffense right_0'+str(i)+'.png'))
+        if not 'SSWORD' in Player.loaded_sprite_List:
+            for i in range(0+1,18):
+                if i != 15:
+                    Player.sprites[str(self.name)+states['SSWORD']+str(directs['down'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Down_'+str(i)+'.png'))
+                    Player.sprites[str(self.name)+states['SSWORD']+str(directs['up'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Up_'+str(i)+'.png'))
+                    Player.sprites[str(self.name)+states['SSWORD']+str(directs['left'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Left_'+str(i)+'.png'))
+                    Player.sprites[str(self.name)+states['SSWORD']+str(directs['right'])].append(load_image('sprite\SoldierShortSwordCombo_Main_Right_'+str(i)+'.png'))
+            Player.loaded_sprite_List.append('SSWORD')
 
-        for i in range(0,8):
-            self.sprites[str(self.name)+states['SHEILDWALK']+str(directs['down'])].append(load_image('sprite\will_shield deffense walk down_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['SHEILDWALK']+str(directs['up'])].append(load_image('sprite\will_shield deffense walk up_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['SHEILDWALK']+str(directs['left'])].append(load_image('sprite\will_shield deffense walk left_0'+str(i)+'.png'))
-            self.sprites[str(self.name)+states['SHEILDWALK']+str(directs['right'])].append(load_image('sprite\will_shield deffense walk right_0'+str(i)+'.png'))
+        if not 'SSHIELD' in Player.loaded_sprite_List:
+            for i in range(0, 6):
+                Player.sprites[str(self.name)+states['SSHIELD']+str(directs['down'])].append(load_image('sprite\will_shield deffense down_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['SSHIELD']+str(directs['up'])].append(load_image('sprite\will_shield deffense up_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['SSHIELD']+str(directs['left'])].append(load_image('sprite\will_shield deffense left_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['SSHIELD']+str(directs['right'])].append(load_image('sprite\will_shield deffense right_0'+str(i)+'.png'))
+            Player.loaded_sprite_List.append('SSHIELD')
+
+        if not 'SHEILDWALK' in Player.loaded_sprite_List:
+            for i in range(0,8):
+                Player.sprites[str(self.name)+states['SHEILDWALK']+str(directs['down'])].append(load_image('sprite\will_shield deffense walk down_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['SHEILDWALK']+str(directs['up'])].append(load_image('sprite\will_shield deffense walk up_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['SHEILDWALK']+str(directs['left'])].append(load_image('sprite\will_shield deffense walk left_0'+str(i)+'.png'))
+                Player.sprites[str(self.name)+states['SHEILDWALK']+str(directs['right'])].append(load_image('sprite\will_shield deffense walk right_0'+str(i)+'.png'))
+            Player.loaded_sprite_List.append('SHEILDWALK')
 
         self.previous_state.append('IDLE')
         self.switch_state('IDLE')
