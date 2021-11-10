@@ -15,15 +15,19 @@ def myRender():
     b_w, b_h = background.w, background.h
     plus_size = 5
     background.draw_to_origin(0-plus_size,0-plus_size,b_w*2+plus_size*2, b_h*2+plus_size*2)
-    mob.rendering()
-    p1.rendering()
+    for o in game_world.all_objects():
+        o.rendering()
+    # mob.rendering()
+    # p1.rendering()
     update_canvas()
 
 
 def update():
     global mob, p1
-    p1.update()
-    mob.update()
+    for o in game_world.all_objects():
+        o.update()
+    # p1.update()
+    # mob.update()
     # print(player.animation_frame)
 
 
@@ -118,14 +122,27 @@ if __name__ == '__main__':
     # p1.__init__('testname',100,10)
     p1 = Player('testname',100,5)
     mob = Monster(100,5,'baby_slime')
+    game_world.add_object(p1,1)
+    game_world.add_object(mob,1)
     background = load_image('sprite\stage\Background.png')
+    current_time = time()
     while True:
         clear_canvas()
         input()
-        update()
+
+        newTime = time()
+        frame_time = newTime - current_time
+        current_time = newTime
+
+        while frame_time > 0.0:
+            deltatime = min(frame_time, dt)
+            update()
+            frame_time -= dt
+            t += deltatime
+
         myRender()
         update_canvas()
-        delay(0.01)
+        # delay(0.01)
     pass
 
 

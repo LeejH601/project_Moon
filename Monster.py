@@ -1,5 +1,5 @@
 from math import dist, sqrt
-from object import *
+from Object import *
 import Player
 
 type_of_monster = {'baby_slime' : 0, 'gollem_knight': 1}
