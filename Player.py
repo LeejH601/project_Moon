@@ -33,6 +33,12 @@ RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
+
+EVA_SPEED_KMPH = 40.0
+EVA_SPEED_MPM = (EVA_SPEED_KMPH * 1000.0 / 60.0)
+EVA_SPEED_MPS = (EVA_SPEED_MPM / 60.0)
+EVA_SPEED_PPS = (EVA_SPEED_MPS * PIXEL_PER_METER)
+
 class IdleState:
 
     TIME_PER_ACTION = 1.5
@@ -54,6 +60,8 @@ class IdleState:
 
     def enter(player, event):
         player.frame = 0
+        IdleState.image[0] = IdleState.image[player.previous_direct[0]*10+player.previous_direct[1]]
+        print("now direct : " , player.previous_direct)
         player.previous_direct = player.direct
         if event == RIGHT_DOWN:
                 player.velocity[0] += 1
@@ -74,7 +82,6 @@ class IdleState:
             
         player.direct[0] = clamp(-1, player.direct[0], 1)
         player.direct[1] = clamp(-1, player.direct[1], 1)
-        IdleState.image[0] = IdleState.image[player.direct[0]*10+player.direct[1]]
         
 
     def exit(player, event):
@@ -84,7 +91,7 @@ class IdleState:
         player.frame = (player.frame + IdleState.FRAMES_PER_ACTION * IdleState.ACTION_PER_TIME * game_framework.frame_time) % IdleState.FRAMES_PER_ACTION
 
     def draw(player):
-        if player.direct[0]*10+player.direct[1] in IdleState.image:
+        if player.direct[0]*10+player.direct[1]:
             IdleState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
         else:
             IdleState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
@@ -129,7 +136,7 @@ class RunState:
             player.velocity[0] += 1
             player.direct[0] += 1
             RunState.key_able[1] = False
-        elif event == TOP_DOWN:
+        elif event == TOP_DOWN :
             player.velocity[1] += 1
             player.direct[1] += 1
             RunState.key_able[2] = True
@@ -137,7 +144,7 @@ class RunState:
             player.velocity[1] -= 1
             player.direct[1] -= 1
             RunState.key_able[3] = True
-        elif event == TOP_UP:
+        elif event == TOP_UP :
             player.velocity[1] -= 1
             player.direct[1]-= 1
             RunState.key_able[2] = False
@@ -145,10 +152,12 @@ class RunState:
             player.velocity[1] += 1
             player.direct[1] += 1
             RunState.key_able[3] = False
-        if player.direct == [0, 0]:
-            player.direct = [0, -1]
+        # if player.direct == [0, 0]:
+        #     player.direct = [0, -1]
         player.direct[0] = clamp(-1, player.direct[0], 1)
         player.direct[1] = clamp(-1, player.direct[1], 1)
+        player.velocity[0] = clamp(-1, player.velocity[0], 1)
+        player.velocity[1] = clamp(-1, player.velocity[1], 1)
         RunState.image[0] = RunState.image[player.direct[0]*10+player.direct[1]]
         distance = math.sqrt(player.velocity[0]**2 + player.velocity[1]**2)
         if distance != 0:
@@ -166,10 +175,19 @@ class RunState:
                 player.direct = [0,1]
             else:
                 player.direct = [0,-1]
+
+        print(event, player.velocity)
         pass
 
     def exit(player, event):
-        pass
+        if event == RIGHT_UP:
+            RunState.key_able[0] = False
+        elif event == LEFT_UP:
+            RunState.key_able[1] = False
+        elif event == TOP_UP :
+            RunState.key_able[2] = False
+        elif event == BOTTOM_UP:
+            RunState.key_able[3] = False
 
     def do(player):
         player.frame = (player.frame + RunState.FRAMES_PER_ACTION * RunState.ACTION_PER_TIME * game_framework.frame_time) % RunState.FRAMES_PER_ACTION
@@ -186,8 +204,74 @@ class RunState:
         #     RunState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
 
 
+
+
 class EvasionState:
-    pass
+    TIME_PER_ACTION = 0.5
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 8
+
+    image = None
+
+    E_timer = 0.0
+
+    now_evasion = False
+
+    def __init__(self):
+        if EvasionState.image == None:
+            EvasionState.image = defaultdict(list)
+            for i in range(0+1, 9):
+                EvasionState.image[-1].append(load_image('sprite\Will_Roll_Down_'+str(i)+'.png'))
+                EvasionState.image[1].append(load_image('sprite\Will_Roll_Up_'+str(i)+'.png'))
+                EvasionState.image[-10].append(load_image('sprite\Will_Roll_Left_'+str(i)+'.png'))
+                EvasionState.image[10].append(load_image('sprite\Will_Roll_Right_'+str(i)+'.png'))
+                EvasionState.image[0] = EvasionState.image[-1]
+
+
+
+    def enter(player, event):
+        if EvasionState.now_evasion == False:
+            player.frame = 0
+            if player.direct == [0, 0]:
+                player.direct = player.previous_direct
+                
+            player.direct[0] = clamp(-1, player.direct[0], 1)
+            player.direct[1] = clamp(-1, player.direct[1], 1)
+            EvasionState.image[0] = EvasionState.image[player.direct[0]*10+player.direct[1]]
+
+            EvasionState.E_timer = EvasionState.TIME_PER_ACTION
+            EvasionState.now_evasion = True
+            if player.vector != [0, 0]:
+                player.vector = [player.vector[0]/RUN_SPEED_PPS*EVA_SPEED_PPS,player.vector[1]/RUN_SPEED_PPS*EVA_SPEED_PPS]
+            else:
+                player.vector = [player.direct[0]*EVA_SPEED_PPS, player.direct[1]*EVA_SPEED_PPS]
+        
+
+    def exit(player, event):
+        pass
+
+    def do(player):
+        player.frame = (player.frame + EvasionState.FRAMES_PER_ACTION * EvasionState.ACTION_PER_TIME * game_framework.frame_time) % EvasionState.FRAMES_PER_ACTION
+
+        player.locate[0] += player.vector[0] * game_framework.frame_time
+        player.locate[1] += player.vector[1] * game_framework.frame_time
+        player.locate = player.myclamp()
+
+        EvasionState.E_timer -= game_framework.frame_time
+        print(EvasionState.E_timer)
+        if EvasionState.E_timer <= 0.0:
+            player.add_event(EVASION_TIMER)
+            player.vector = [player.vector[0]/EVA_SPEED_PPS*RUN_SPEED_PPS,player.vector[1]/EVA_SPEED_PPS*RUN_SPEED_PPS]
+            player.velocity = [0, 0]
+            player.vector = [0, 0]
+            EvasionState.now_evasion = False
+
+    def draw(player):
+        if player.direct[0]*10+player.direct[1] in EvasionState.image:
+            EvasionState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+        else:
+            EvasionState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+EvasionState
 
 class SwordAttackState:
     pass
@@ -200,7 +284,7 @@ class DeffesedRunState:
 
 
 next_state_table = {
-    IdleState: {RIGHT_DOWN: RunState, LEFT_DOWN: RunState, RIGHT_UP: RunState, LEFT_UP: RunState, TOP_UP: RunState, TOP_DOWN: RunState, BOTTOM_UP: RunState, BOTTOM_DOWN: RunState,
+    IdleState: {RIGHT_DOWN: RunState, LEFT_DOWN: RunState, TOP_DOWN: RunState, BOTTOM_DOWN: RunState,
                  SPACE: EvasionState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordDeffenseState, SATTACK_UP: SwordDeffenseState},
     RunState: {RIGHT_DOWN: RunState, LEFT_DOWN: RunState, RIGHT_UP: IdleState, LEFT_UP: IdleState, TOP_UP: IdleState, TOP_DOWN: RunState, BOTTOM_UP: IdleState, BOTTOM_DOWN: RunState,
                  SPACE: EvasionState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordDeffenseState, SATTACK_UP: SwordDeffenseState},
@@ -257,7 +341,9 @@ class Player(Object, Singleton):
         super().__init__(_x, _y, _health, _speed)
         IdleState()
         RunState()
+        EvasionState()
         self.rect_size = [IdleState.image[1][0].w*s_size, IdleState.image[1][0].h*s_size]
+        Player.previous_direct = self.direct
         self.cur_state.enter(self, None)
         print(self.locate)
 
@@ -276,18 +362,20 @@ class Player(Object, Singleton):
         self.cur_state.do(self)
         if len(self.event_que) > 0:
             event = self.event_que.pop()
-            if self.cur_state == RunState and RunState.key_able.count(True) > 1 and \
-                (event == RIGHT_UP or event == LEFT_UP or event == TOP_UP or event == BOTTOM_UP):
-                pass
-            else:
-                self.cur_state.exit(self, event)
-                try:
-                    self.cur_state = next_state_table[self.cur_state][event]
-                    history.append(   (self.cur_state.__name__, event_name[event])   )
-                except:
-                    print('State : ' + self.cur_state.__name__ + 'Event: ' + event_name[event])
-                    exit(-1)
-            self.cur_state.enter(self, event)
+            if event in next_state_table[self.cur_state]:
+                print("카운트 출력 : ", RunState.key_able.count(True))
+                if self.cur_state == RunState and RunState.key_able.count(True) > 1 and \
+                    (event == RIGHT_UP or event == LEFT_UP or event == TOP_UP or event == BOTTOM_UP):
+                    pass
+                else:
+                    self.cur_state.exit(self, event)
+                    try:
+                        self.cur_state = next_state_table[self.cur_state][event]
+                        history.append(   (self.cur_state.__name__, event_name[event])   )
+                    except:
+                        print('State : ' + self.cur_state.__name__ + 'Event: ' + event_name[event])
+                        exit(-1)
+                self.cur_state.enter(self, event)
 
     def add_event(self, event):
         self.event_que.insert(0, event)

@@ -33,8 +33,8 @@ class Object:
         pass
 
     def myclamp(self):
-        self.locate[0] = clamp(0, self.locate[0], Screen_size[0] - 0)
-        self.locate[1] = clamp(0, self.locate[1], Screen_size[1] - 0)
+        self.locate[0] = clamp(0, self.locate[0], Screen_size[0] - 40)
+        self.locate[1] = clamp(0, self.locate[1], Screen_size[1] - 40)
         return self.locate
 
     def collision(self):
