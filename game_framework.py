@@ -1,3 +1,11 @@
+from time import time
+
+deltatime = 0
+t = 0.0
+dt = 1 / 60.0
+current_time = 0
+frame_time = 0
+
 class GameState:
     def __init__(self, state):
         self.enter = state.enter
@@ -78,14 +86,31 @@ def quit():
 
 
 def run(start_state):
-    global running, stack
+    global running, stack, t, deltatime, frame_time, dt
     running = True
     stack = [start_state]
     start_state.enter()
+    
+    current_time = time()
+    frame_time = time() - current_time
+
     while (running):
         stack[-1].handle_events()
-        stack[-1].update()
+        lop_frame_time = frame_time
+        while lop_frame_time > 0.0:
+            deltatime = min(lop_frame_time, dt)
+            # deltatime = min(frame_time, dt)
+            stack[-1].update()
+            lop_frame_time -= dt
+            t += deltatime
         stack[-1].draw()
+        # print(frame_time)
+        
+        frame_time = time() - current_time
+        current_time += frame_time
+
+        
+
     while (len(stack) > 0):
         stack[-1].exit()
         stack.pop()

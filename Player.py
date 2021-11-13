@@ -1,8 +1,14 @@
+from math import fabs
 from object import *
 
+history = []
 
 RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN, \
-    ATTACK_DOWN, ATTACK_UP, SATTACK_DOWN, SATTACK_UP, INVENTORY_DOWN, INVENTORY_UP, EVASION_TIMER  = range(16)
+    ATTACK_DOWN, ATTACK_UP, SATTACK_DOWN, SATTACK_UP, INVENTORY_DOWN, INVENTORY_UP, EVASION_TIMER, DEBUG_KEY  = range(17)
+
+
+event_name = ['RIGHT_DOWN', 'LEFT_DOWN', 'RIGHT_UP', 'LEFT_UP', 'SPACE', 'TOP_UP', 'TOP_DOWN', 'BOTTOM_UP', 'BOTTOM_DOWN', \
+    'ATTACK_DOWN', 'ATTACK_UP', 'SATTACK_DOWN', 'SATTACK_UP', 'INVENTORY_DOWN', 'INVENTORY_UP', 'EVASION_TIMER', 'DEBUG_KEY']
 
 key_event_table = {
     (SDL_KEYDOWN, SDLK_d): RIGHT_DOWN,
@@ -19,39 +25,166 @@ key_event_table = {
     (SDL_KEYUP, SDLK_j): ATTACK_UP,
     (SDL_KEYUP, SDLK_k): SATTACK_UP,
     (SDL_KEYDOWN, SDLK_i): INVENTORY_DOWN,
+    (SDL_KEYDOWN, SDLK_0): DEBUG_KEY
 }
 
-class IdleState:
-    def enter(boy, event):
-        if event == RIGHT_DOWN:
-            boy.velocity += RUN_SPEED_PPS
-        elif event == LEFT_DOWN:
-            boy.velocity -= RUN_SPEED_PPS
-        elif event == RIGHT_UP:
-            boy.velocity -= RUN_SPEED_PPS
-        elif event == LEFT_UP:
-            boy.velocity += RUN_SPEED_PPS
-        boy.timer = 1000
+RUN_SPEED_KMPH = 20.0
+RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
-    def exit(boy, event):
-        if event == SPACE:
-            boy.fire_ball()
+class IdleState:
+
+    TIME_PER_ACTION = 1.5
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 9
+
+    image = None
+
+    def __init__(self):
+        if IdleState.image == None:
+            IdleState.image = defaultdict(list)
+            for i in range(0+1, 10):
+                IdleState.image[-1].append(load_image('sprite\Will_Idle_Down_'+str(i)+'.png'))
+                IdleState.image[1].append(load_image('sprite\Will_Idle_Up_'+str(i)+'.png'))
+                IdleState.image[-10].append(load_image('sprite\Will_Idle_Left_'+str(i)+'.png'))
+                IdleState.image[10].append(load_image('sprite\Will_Idle_Right_'+str(i)+'.png'))
+                IdleState.image[0] = IdleState.image[-1]
+
+
+    def enter(player, event):
+        player.frame = 0
+        player.previous_direct = player.direct
+        if event == RIGHT_DOWN:
+                player.velocity[0] += 1
+        elif event == LEFT_DOWN:
+                player.velocity[0] -= 1    
+        elif event == RIGHT_UP:
+                player.velocity[0] -= 1
+        elif event == LEFT_UP:
+                player.velocity[0] += 1
+        elif event == TOP_DOWN:
+                player.velocity[1] += 1
+        elif event == BOTTOM_DOWN:
+                player.velocity[1] -= 1
+        elif event == TOP_UP:
+                player.velocity[1] -= 1
+        elif event == BOTTOM_UP:
+                player.velocity[1] += 1
+            
+        player.direct[0] = clamp(-1, player.direct[0], 1)
+        player.direct[1] = clamp(-1, player.direct[1], 1)
+        IdleState.image[0] = IdleState.image[player.direct[0]*10+player.direct[1]]
+        
+
+    def exit(player, event):
         pass
 
-    def do(boy):
-        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
-        boy.timer -= 1
-        if boy.timer == 0:
-            boy.add_event(SLEEP_TIMER)
+    def do(player):
+        player.frame = (player.frame + IdleState.FRAMES_PER_ACTION * IdleState.ACTION_PER_TIME * game_framework.frame_time) % IdleState.FRAMES_PER_ACTION
 
-    def draw(boy):
-        if boy.dir == 1:
-            boy.image.clip_draw(int(boy.frame) * 100, 300, 100, 100, boy.x, boy.y)
+    def draw(player):
+        if player.direct[0]*10+player.direct[1] in IdleState.image:
+            IdleState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
         else:
-            boy.image.clip_draw(int(boy.frame) * 100, 200, 100, 100, boy.x, boy.y)
+            IdleState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
 
 class RunState:
-    pass
+
+    TIME_PER_ACTION = 1
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 8
+
+    image = None
+
+    key_able = [False, False, False, False]
+
+    def __init__(self):
+        if RunState.image == None:
+            RunState.image = defaultdict(list)
+            for i in range(0+1, 9):
+                RunState.image[-1].append(load_image('sprite\will animation cycle front dungeon_0'+str(i)+'.png'))
+                RunState.image[1].append(load_image('sprite\will walking cycle back_0'+str(i)+'.png'))
+                RunState.image[-10].append(load_image('sprite\will_walking cycle_left side0'+str(i)+'.png'))
+                RunState.image[10].append(load_image('sprite\will_walking cycle_right side0'+str(i)+'.png'))
+                RunState.image[0] = RunState.image[-1]
+
+    def enter(player, event):
+        # player.frame = 0
+        player.previous_direct = player.direct
+        # player.direct = [0, 0]
+        if event == RIGHT_DOWN:
+            player.velocity[0] += 1
+            player.direct[0] += 1
+            RunState.key_able[0] = True
+        elif event == LEFT_DOWN:
+            player.velocity[0] -= 1    
+            player.direct[0] -= 1
+            RunState.key_able[1] = True
+        elif event == RIGHT_UP:
+            player.velocity[0] -= 1
+            player.direct[0] -= 1
+            RunState.key_able[0] = False
+        elif event == LEFT_UP:
+            player.velocity[0] += 1
+            player.direct[0] += 1
+            RunState.key_able[1] = False
+        elif event == TOP_DOWN:
+            player.velocity[1] += 1
+            player.direct[1] += 1
+            RunState.key_able[2] = True
+        elif event == BOTTOM_DOWN:
+            player.velocity[1] -= 1
+            player.direct[1] -= 1
+            RunState.key_able[3] = True
+        elif event == TOP_UP:
+            player.velocity[1] -= 1
+            player.direct[1]-= 1
+            RunState.key_able[2] = False
+        elif event == BOTTOM_UP:
+            player.velocity[1] += 1
+            player.direct[1] += 1
+            RunState.key_able[3] = False
+        if player.direct == [0, 0]:
+            player.direct = [0, -1]
+        player.direct[0] = clamp(-1, player.direct[0], 1)
+        player.direct[1] = clamp(-1, player.direct[1], 1)
+        RunState.image[0] = RunState.image[player.direct[0]*10+player.direct[1]]
+        distance = math.sqrt(player.velocity[0]**2 + player.velocity[1]**2)
+        if distance != 0:
+            player.vector = [player.velocity[0] / distance, player.velocity[1]/distance]
+        else:
+            player.vector = [player.velocity[0], player.velocity[1]]
+        player.vector = [player.vector[0]* RUN_SPEED_PPS, player.vector[1]* RUN_SPEED_PPS]
+        if abs(player.vector[0]) > abs(player.vector[1]):
+            if player.vector[0] > 0:
+                player.direct = [1,0]
+            else:
+                player.direct = [-1,0]
+        else:
+            if player.vector[1] > 0:
+                player.direct = [0,1]
+            else:
+                player.direct = [0,-1]
+        pass
+
+    def exit(player, event):
+        pass
+
+    def do(player):
+        player.frame = (player.frame + RunState.FRAMES_PER_ACTION * RunState.ACTION_PER_TIME * game_framework.frame_time) % RunState.FRAMES_PER_ACTION
+        player.locate[0] += player.vector[0] * game_framework.frame_time
+        player.locate[1] += player.vector[1] * game_framework.frame_time
+        player.locate = player.myclamp()
+
+    def draw(player):
+        if player.direct[0]*10+player.direct[1] in RunState.image and player.vector != [0,0]:
+            RunState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+        elif player.vector == [0, 0]:
+            IdleState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+        # else:
+        #     RunState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+
 
 class EvasionState:
     pass
@@ -69,7 +202,7 @@ class DeffesedRunState:
 next_state_table = {
     IdleState: {RIGHT_DOWN: RunState, LEFT_DOWN: RunState, RIGHT_UP: RunState, LEFT_UP: RunState, TOP_UP: RunState, TOP_DOWN: RunState, BOTTOM_UP: RunState, BOTTOM_DOWN: RunState,
                  SPACE: EvasionState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordDeffenseState, SATTACK_UP: SwordDeffenseState},
-    RunState: {RIGHT_DOWN: IdleState, LEFT_DOWN: IdleState, RIGHT_UP: IdleState, LEFT_UP: IdleState, TOP_UP: IdleState, TOP_DOWN: IdleState, BOTTOM_UP: IdleState, BOTTOM_DOWN: IdleState,
+    RunState: {RIGHT_DOWN: RunState, LEFT_DOWN: RunState, RIGHT_UP: IdleState, LEFT_UP: IdleState, TOP_UP: IdleState, TOP_DOWN: RunState, BOTTOM_UP: IdleState, BOTTOM_DOWN: RunState,
                  SPACE: EvasionState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordDeffenseState, SATTACK_UP: SwordDeffenseState},
     EvasionState : {RIGHT_DOWN: EvasionState, LEFT_DOWN: EvasionState, RIGHT_UP: EvasionState, LEFT_UP: EvasionState, TOP_UP: EvasionState, TOP_DOWN: EvasionState, BOTTOM_UP: EvasionState, BOTTOM_DOWN: EvasionState,
                  SPACE: EvasionState, ATTACK_DOWN: EvasionState, ATTACK_UP: EvasionState, SATTACK_DOWN: EvasionState, SATTACK_UP: EvasionState, EVASION_TIMER: IdleState},
@@ -111,23 +244,52 @@ class Player(Object, Singleton):
     correction_place.append(
                     [(0, 5),(-19, 5),(-15, 6),(-9, 0),(20, 17),(-11, 5),(-11, 2),(-8, 0),(0, 8),(-15, 5),(-11, 5),(-7, 6),(27, 8),(25, 10),(25, 10),(25, 10),(25, 10),
                     ])
+    
+    velocity = [0, 0]
+    frame = 0
+    event_que = []
+    cur_state = IdleState   
 
+    previous_direct = None
+    vector = [0, 0]
 
     def __init__(self, _x, _y, _health, _speed):
         super().__init__(_x, _y, _health, _speed)
+        IdleState()
+        RunState()
+        self.rect_size = [IdleState.image[1][0].w*s_size, IdleState.image[1][0].h*s_size]
+        self.cur_state.enter(self, None)
+        print(self.locate)
 
     def rendering(self):
-        return super().rendering()
+        self.cur_state.draw(self)
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
-            self.add_event(key_event)
+            if DEBUG_KEY == key_event:
+                print(history[-10:])
+            else:
+                self.add_event(key_event)
 
     def update(self):
-        return super().update()
+        self.cur_state.do(self)
+        if len(self.event_que) > 0:
+            event = self.event_que.pop()
+            if self.cur_state == RunState and RunState.key_able.count(True) > 1 and \
+                (event == RIGHT_UP or event == LEFT_UP or event == TOP_UP or event == BOTTOM_UP):
+                pass
+            else:
+                self.cur_state.exit(self, event)
+                try:
+                    self.cur_state = next_state_table[self.cur_state][event]
+                    history.append(   (self.cur_state.__name__, event_name[event])   )
+                except:
+                    print('State : ' + self.cur_state.__name__ + 'Event: ' + event_name[event])
+                    exit(-1)
+            self.cur_state.enter(self, event)
 
-    def add_event(self):
-        pass
+    def add_event(self, event):
+        self.event_que.insert(0, event)
 
     pass

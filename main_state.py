@@ -1,56 +1,26 @@
 import random
 import json
 import os
+from Player import Player
 
-from pico2d import *
-
-import game_framework
+from modules import *
 import title_state
 
 
 
 name = "MainState"
 
-boy = None
-grass = None
+
 font = None
 
 
-
-class Grass:
-    def __init__(self):
-        self.image = load_image('grass.png')
-
-    def draw(self):
-        self.image.draw(400, 30)
-
-
-
-class Boy:
-    def __init__(self):
-        self.x, self.y = 0, 90
-        self.frame = 0
-        self.image = load_image('run_animation.png')
-        self.dir = 1
-
-    def update(self):
-        self.frame = (self.frame + 1) % 8
-        self.x += self.dir
-        if self.x >= 800:
-            self.dir = -1
-        elif self.x <= 0:
-            self.dir = 1
-
-    def draw(self):
-        self.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
-
-
 def enter():
-    pass
+    player = Player(Screen_size[0]/2, Screen_size[1]/2, 100,5)
+    game_world.add_object(Player._instance, 1)
 
 
 def exit():
-    pass
+    game_world.clear()
 
 
 def pause():
@@ -62,15 +32,25 @@ def resume():
 
 
 def handle_events():
+    events = get_events()
+    for event in events:
+        if event.type == SDL_QUIT:
+            game_framework.quit()
+        else:
+            Player._instance.handle_event(event)
     pass
 
 
 def update():
-    pass
+    for game_object in game_world.all_objects():
+        game_object.update()
 
 
 def draw():
-    pass
+    clear_canvas()
+    for game_object in game_world.all_objects():
+        game_object.rendering()
+    update_canvas()
 
 
 

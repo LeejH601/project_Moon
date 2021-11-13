@@ -1,5 +1,4 @@
-import game_framework
-from pico2d import *
+from modules import *
 import title_state
 
 name = "StartState"
