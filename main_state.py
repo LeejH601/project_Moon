@@ -2,6 +2,7 @@ import random
 import json
 import os
 from Player import Player
+from Stage import stage
 
 from modules import *
 import title_state
@@ -16,7 +17,9 @@ font = None
 
 def enter():
     player = Player(Screen_size[0]/2, Screen_size[1]/2, 100,5)
+    _stage = stage()
     game_world.add_object(Player._instance, 1)
+    game_world.add_object(_stage, 0)
 
 
 def exit():
@@ -41,9 +44,9 @@ def handle_events():
     pass
 
 
-def update():
+def update(deltatime):
     for game_object in game_world.all_objects():
-        game_object.update()
+        game_object.update(deltatime)
 
 
 def draw():

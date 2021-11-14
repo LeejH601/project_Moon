@@ -4,10 +4,10 @@ class Object:
     locate = [0, 0]
     health = 0
     speed = 0
-    direct = [0, 0]
+    direct = [0, -1]
     rect_size = [0, 0]
     
-    
+    image = None
 
     
 
@@ -15,9 +15,9 @@ class Object:
         self.locate = [_x, _y]
         self.health = _health
         self.speed = _speed
-        self.direct = [0,0]
+        self.direct = [0, -1]
 
-    def update(self):
+    def update(self, deltatime):
         pass
 
     def rendering(self):

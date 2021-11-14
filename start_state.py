@@ -17,7 +17,7 @@ def exit():
     del(image)
 
 
-def update():
+def update(deltatime):
     global logo_time
     
     if logo_time > 1.0:

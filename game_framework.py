@@ -5,6 +5,7 @@ t = 0.0
 dt = 1 / 60.0
 current_time = 0
 frame_time = 0
+accumulator = 0.0
 
 class GameState:
     def __init__(self, state):
@@ -86,7 +87,7 @@ def quit():
 
 
 def run(start_state):
-    global running, stack, t, deltatime, frame_time, dt
+    global running, stack, t, deltatime, frame_time, dt, accumulator
     running = True
     stack = [start_state]
     start_state.enter()
@@ -96,15 +97,22 @@ def run(start_state):
 
     while (running):
         stack[-1].handle_events()
-        lop_frame_time = frame_time
-        while lop_frame_time > 0.0:
-            deltatime = min(lop_frame_time, dt)
+        accumulator += frame_time
+        while accumulator >= dt:
             # deltatime = min(frame_time, dt)
-            stack[-1].update()
-            lop_frame_time -= dt
-            t += deltatime
+            # deltatime = min(frame_time, dt)
+            stack[-1].update(dt)
+            accumulator -= dt
+            t += dt
         stack[-1].draw()
+
+        stack[-1].update(accumulator)
+        accumulator = 0
         # print(frame_time)
+
+        # parameter = accumulator / dt
+        
+        # stack[-1].update(parameter)
         
         frame_time = time() - current_time
         current_time += frame_time
