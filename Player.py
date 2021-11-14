@@ -4,11 +4,11 @@ from object import *
 history = []
 
 RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN, \
-    ATTACK_DOWN, ATTACK_UP, SATTACK_DOWN, SATTACK_UP, INVENTORY_DOWN, INVENTORY_UP, EVASION_TIMER, DEBUG_KEY  = range(17)
+    ATTACK_DOWN, ATTACK_UP, SATTACK_DOWN, SATTACK_UP, INVENTORY_DOWN, INVENTORY_UP, EVASION_TIMER, DEBUG_KEY, ATK_TIMER  = range(18)
 
 
 event_name = ['RIGHT_DOWN', 'LEFT_DOWN', 'RIGHT_UP', 'LEFT_UP', 'SPACE', 'TOP_UP', 'TOP_DOWN', 'BOTTOM_UP', 'BOTTOM_DOWN', \
-    'ATTACK_DOWN', 'ATTACK_UP', 'SATTACK_DOWN', 'SATTACK_UP', 'INVENTORY_DOWN', 'INVENTORY_UP', 'EVASION_TIMER', 'DEBUG_KEY']
+    'ATTACK_DOWN', 'ATTACK_UP', 'SATTACK_DOWN', 'SATTACK_UP', 'INVENTORY_DOWN', 'INVENTORY_UP', 'EVASION_TIMER', 'DEBUG_KEY', 'ATK_TIMER']
 
 key_event_table = {
     (SDL_KEYDOWN, SDLK_d): RIGHT_DOWN,
@@ -271,10 +271,110 @@ class EvasionState:
             EvasionState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
         else:
             EvasionState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
-EvasionState
+
 
 class SwordAttackState:
-    pass
+    TIME_PER_ACTION = 2.3
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 18
+
+    image = None
+
+    Start_Frame = 0
+    Stack_to_image_Table = { 0: 5, 1: 4, 2: 9}
+
+    Atk_Timer = 0
+    Atk_Stack = 0
+
+    now_Atk = False
+    is_continue_1 = False
+    is_continue_2 = False
+
+    def __init__(self):
+        if SwordAttackState.image == None:
+            SwordAttackState.image = defaultdict(list)
+            for i in range(0+1, 19):
+                SwordAttackState.image[-1].append(load_image('sprite\Will_ShortSwordCombo_Animation_Down_'+str(i)+'.png'))
+                SwordAttackState.image[1].append(load_image('sprite\Will_ShortSwordCombo_Animation_Up_'+str(i)+'.png'))
+                SwordAttackState.image[-10].append(load_image('sprite\Will_ShortSwordCombo_Animation_Left_'+str(i)+'.png'))
+                SwordAttackState.image[10].append(load_image('sprite\Will_ShortSwordCombo_Animation_Right_'+str(i)+'.png'))
+                SwordAttackState.image[0] = SwordAttackState.image[-1]
+
+
+
+    def enter(player, event):
+        if SwordAttackState.now_Atk == False:
+
+            # if SwordAttackState.Atk_Stack >= 3:
+            #     SwordAttackState.Atk_Stack = 0
+
+            # SwordAttackState.FRAMES_PER_ACTION = SwordAttackState.Stack_to_image_Table[SwordAttackState.Atk_Stack]
+            # SwordAttackState.TIME_PER_ACTION = SwordAttackState.FRAMES_PER_ACTION / 10
+            # print('TimePerAction: ', SwordAttackState.TIME_PER_ACTION)
+            # SwordAttackState.ACTION_PER_TIME = 1.0 / SwordAttackState.TIME_PER_ACTION
+            # SwordAttackState.Atk_Stack += 1
+            
+
+            SwordAttackState.Start_Frame = 0
+            # for i in range(0, SwordAttackState.Atk_Stack - 1):
+            #     SwordAttackState.Start_Frame += SwordAttackState.Stack_to_image_Table[i]
+            
+            player.frame = 0
+            print(SwordAttackState.Start_Frame)
+            print('action timer print: ', SwordAttackState.FRAMES_PER_ACTION, SwordAttackState.TIME_PER_ACTION,  SwordAttackState.TIME_PER_ACTION)
+            if player.direct == [0, 0]:
+                player.direct = player.previous_direct
+                
+            player.direct[0] = clamp(-1, player.direct[0], 1)
+            player.direct[1] = clamp(-1, player.direct[1], 1)
+            SwordAttackState.image[0] = SwordAttackState.image[player.direct[0]*10+player.direct[1]]
+ 
+
+            SwordAttackState.Atk_Timer = SwordAttackState.TIME_PER_ACTION
+            SwordAttackState.now_Atk = True
+        
+
+    def exit(player, event):
+        pass
+
+    def do(player):
+        player.frame = SwordAttackState.Start_Frame + ((player.frame + SwordAttackState.FRAMES_PER_ACTION * SwordAttackState.ACTION_PER_TIME * game_framework.frame_time) % SwordAttackState.FRAMES_PER_ACTION)
+        # print(player.frame)
+        SwordAttackState.Atk_Timer -= game_framework.frame_time
+        if SwordAttackState.Atk_Timer <= 0.0 and SwordAttackState.now_Atk:
+            player.add_event(ATK_TIMER)
+            SwordAttackState.now_Atk = False
+            SwordAttackState.is_continue_1 = False
+            SwordAttackState.is_continue_2 = False
+        elif player.frame > 5 and SwordAttackState.is_continue_1 == False:
+            player.add_event(ATK_TIMER)
+            SwordAttackState.now_Atk = False
+        elif player.frame > 9 and SwordAttackState.is_continue_2 == False:
+            player.add_event(ATK_TIMER)
+            SwordAttackState.now_Atk = False
+        if player.frame < 5:
+            events = get_events()
+            for event in events:
+                if event.type == SDL_KEYDOWN and event.key == SDLK_j:
+                   SwordAttackState.is_continue_1 = True
+        elif player.frame > 5 and player.frame < 9:
+            events = get_events()
+            for event in events:
+                if event.type == SDL_KEYDOWN and event.key == SDLK_j:
+                   SwordAttackState.is_continue_2 = True
+
+
+        
+        player.locate = player.myclamp()
+
+        
+
+    def draw(player):
+        if player.direct[0]*10+player.direct[1] in SwordAttackState.image:
+            SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+        else:
+            SwordAttackState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+
 
 class SwordDeffenseState:
     pass
@@ -291,7 +391,8 @@ next_state_table = {
     EvasionState : {RIGHT_DOWN: EvasionState, LEFT_DOWN: EvasionState, RIGHT_UP: EvasionState, LEFT_UP: EvasionState, TOP_UP: EvasionState, TOP_DOWN: EvasionState, BOTTOM_UP: EvasionState, BOTTOM_DOWN: EvasionState,
                  SPACE: EvasionState, ATTACK_DOWN: EvasionState, ATTACK_UP: EvasionState, SATTACK_DOWN: EvasionState, SATTACK_UP: EvasionState, EVASION_TIMER: IdleState},
     SwordAttackState: {RIGHT_DOWN: SwordAttackState, LEFT_DOWN: SwordAttackState, RIGHT_UP: SwordAttackState, LEFT_UP: SwordAttackState, TOP_UP: SwordAttackState, TOP_DOWN: SwordAttackState, BOTTOM_UP: SwordAttackState, BOTTOM_DOWN: SwordAttackState,
-                 SPACE: SwordAttackState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordAttackState, SATTACK_UP: SwordAttackState, EVASION_TIMER: SwordAttackState},
+                 SPACE: SwordAttackState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordAttackState, SATTACK_UP: SwordAttackState, EVASION_TIMER: SwordAttackState,
+                    ATK_TIMER: IdleState},
     SwordDeffenseState : {RIGHT_DOWN: DeffesedRunState, LEFT_DOWN: DeffesedRunState, RIGHT_UP: DeffesedRunState, LEFT_UP: DeffesedRunState, TOP_UP: DeffesedRunState, TOP_DOWN: DeffesedRunState, BOTTOM_UP: DeffesedRunState, BOTTOM_DOWN: DeffesedRunState,
                  SPACE: EvasionState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordDeffenseState, SATTACK_UP: IdleState},
     DeffesedRunState : {RIGHT_DOWN: SwordDeffenseState, LEFT_DOWN: SwordDeffenseState, RIGHT_UP: SwordDeffenseState, LEFT_UP: SwordDeffenseState, TOP_UP: SwordDeffenseState, TOP_DOWN: SwordDeffenseState, BOTTOM_UP: SwordDeffenseState, BOTTOM_DOWN: SwordDeffenseState,
@@ -342,6 +443,7 @@ class Player(Object, Singleton):
         IdleState()
         RunState()
         EvasionState()
+        SwordAttackState()
         self.rect_size = [IdleState.image[1][0].w*s_size, IdleState.image[1][0].h*s_size]
         Player.previous_direct = self.direct
         self.cur_state.enter(self, None)
@@ -363,7 +465,7 @@ class Player(Object, Singleton):
         if len(self.event_que) > 0:
             event = self.event_que.pop()
             if event in next_state_table[self.cur_state]:
-                print("카운트 출력 : ", RunState.key_able.count(True))
+                # print("카운트 출력 : ", RunState.key_able.count(True))
                 if self.cur_state == RunState and RunState.key_able.count(True) > 1 and \
                     (event == RIGHT_UP or event == LEFT_UP or event == TOP_UP or event == BOTTOM_UP):
                     pass
