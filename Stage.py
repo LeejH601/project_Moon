@@ -1,4 +1,5 @@
 from random import randint
+from Player import Player
 from modules import *
 from object import Object
 
@@ -12,11 +13,13 @@ class stage(Object):
     def __init__(self):
         if stage.background_image == None:
             stage.background_image = load_image('sprite\stage\Background.png')
-        
+        game_world.add_object(self, 0)
         stage.MakeRooms(1)
+        # game_world.add_objects(self.cur_room.get_gateList(), 0)
         pass
 
     def show_rooms_info(self):
+        print('now_room: ', self.cur_room.get_ID())
         for i in stage.rooms:
             print(str(i.get_ID()) + " ",end='')
             i.show_gates_info()
@@ -26,6 +29,7 @@ class stage(Object):
         rm_count = random.randint(0,2) + 5 + level * 2
         n_id = 35
         stage.rooms.append(Room(n_id,stage.background_image))
+        stage.room_indexs[n_id] = 0
         stage.cur_room = stage.rooms[0]
         ids = [-1,1,-10,10]
         while len(stage.rooms) < rm_count:
@@ -63,12 +67,15 @@ class stage(Object):
 
 
     def EnterRoom(self, dir_ID):
-        gates = self.now_Room.get_gateList()
-        now_ID = self.now_Room.get_ID()
-        new_ID = now_ID + dir_ID
-        if new_ID in gates:
-            self.now_Room = self.rooms[self.rooms[new_ID]]
-            pass
+        Player._instance.locate = [Screen_size[0]/2, Screen_size[1]/2]
+        gates = self.cur_room.get_gateList()
+        now_ID = self.cur_room.get_ID()
+        new_ID = dir_ID
+        for gate in gates:
+            if new_ID == gate.get_linked_ID():
+                self.cur_room = self.rooms[self.room_indexs[new_ID]]
+                pass
+        self.show_rooms_info(self)
         pass
 
     def update(self, deltatime):
@@ -82,7 +89,6 @@ class stage(Object):
 
 class Room(Object):
     moster_list = []
-    Door_image = None
     
     def __init__(self, _id, _bkimage):
         # if Room.Door_image == None:
@@ -95,14 +101,16 @@ class Room(Object):
         pass
 
     def add_gate(self, _ID):
-        self.gates.append(_ID)
+        ngate = Gate(_ID, self.room_Id)
+        self.gates.append(ngate)
+        # game_world.add_object(ngate, 0)
 
     def get_gateList(self):
         return self.gates
 
     def show_gates_info(self):
         for i in self.gates:
-            print(str(i) + " ",end='')
+            i.my_info()
 
     def get_ID(self):
         return self.room_Id
@@ -112,14 +120,65 @@ class Room(Object):
 
     def rendering(self):
         self.image.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
-    pass
+        for gate in self.gates:
+            gate.rendering()
+        pass
 
-class Gate(object):
+class Gate(Object):
+    image = None
+
+    def __init__(self, lk_id, my_id):
+        direct = [(my_id - lk_id) // 10, (my_id - lk_id) % 10]
+        if direct == [-1, 9] :
+            direct = [0, -1]
+        
+        self.Linked_id = lk_id
+        self.my_id = my_id
+        if Gate.image == None:
+            Gate.image = []
+            for i in range(1, 11+1):
+                Gate.image.append(load_image('sprite\stage\golem_basic_doors'+str(i)+'.png'))
+        super().__init__(0,0,1,1, direct)
+        if self.direct == [0,-1]: # 0
+            self.locate = [Screen_size[0] / 2 , self.image[0].h]
+            self.rad = math.pi
+        elif self.direct == [0, 1]: # 180
+            self.locate = [Screen_size[0] / 2, Screen_size[1] - self.image[0].h]
+            self.rad = 0
+        elif self.direct == [-1,0]: # -90
+            self.locate = [self.image[0].h , Screen_size[1] / 2]
+            self.rad = math.pi/2
+        elif self.direct == [1, 0]: # 90
+            self.locate = [Screen_size[0] - self.image[0].h, Screen_size[1] / 2]
+            self.rad = -math.pi/2
+
+
+        pass
+
+    def my_info(self):
+        print(str(self.Linked_id) + " ",end='')
+
+    def get_my_ID(self):
+        return self.room_Id
+
+    def get_linked_ID(self):
+        return self.Linked_id
+
+    def update(self, deltatime):
+        return super().update(deltatime)
+
+    def rendering(self):
+        # print(self.locate)
+        self.image[0].rotate_draw(self.rad ,*self.locate,Gate.image[0].w*s_size/2, Gate.image[0].h*s_size/2)
+
+    def get_rect(self):
+        return self.locate[0] - 20, self.locate[1] - 20, self.locate[0] + 20, self.locate[1] + 20
+    
     pass
 
 if __name__ == '__main__':
     open_canvas()
-    test_stage = stage()
-    test_stage.MakeRooms(1)
-    test_stage.show_rooms_info()
+    stage()
+    # stage.MakeRooms(1)
+    stage.show_rooms_info(stage)
     close_canvas()

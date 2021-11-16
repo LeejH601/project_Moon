@@ -8,14 +8,14 @@ class Object:
     rect_size = [0, 0]
     
     image = None
-
+    frame = 0
     
 
-    def __init__(self, _x, _y, _health, _speed):
+    def __init__(self, _x, _y, _health, _speed, _direct = [0, -1]):
         self.locate = [_x, _y]
         self.health = _health
         self.speed = _speed
-        self.direct = [0, -1]
+        self.direct = _direct
 
     def update(self, deltatime):
         pass
@@ -31,6 +31,12 @@ class Object:
 
     def get_direct(self):
         pass
+
+    def get_locate(self):
+        return self.locate
+
+    def get_rect(self):
+        return self.locate[0], self.locate[1], self.locate[0] + self.rect_size[0], self.locate[1] + self.rect_size[1]
 
     def myclamp(self):
         self.locate[0] = clamp(0, self.locate[0], Screen_size[0] - 40)

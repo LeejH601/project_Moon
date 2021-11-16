@@ -19,7 +19,9 @@ def enter():
     player = Player(Screen_size[0]/2, Screen_size[1]/2, 100,5)
     _stage = stage()
     game_world.add_object(Player._instance, 1)
-    game_world.add_object(_stage, 0)
+    # game_world.add_object(stage(), 0)
+    # print(game_world.objects)
+    stage.show_rooms_info(stage)
 
 
 def exit():
@@ -48,6 +50,12 @@ def update(deltatime):
     for game_object in game_world.all_objects():
         game_object.update(deltatime)
 
+    gates = stage.cur_room.get_gateList()
+    for gate in gates:
+        if collider(gate, Player._instance):
+            # print("!!!collsion!!!!")
+            stage.EnterRoom(stage, gate.get_linked_ID())
+
 
 def draw():
     clear_canvas()
@@ -57,5 +65,15 @@ def draw():
 
 
 
+def collider(a, b):
+    left_a, bottom_a, right_a, top_a = a.get_rect()
+    left_b, bottom_b, right_b, top_b = b.get_rect()
 
+    if left_a > right_b: return False
+    if right_a < left_b: return False
+    if top_a < bottom_b: return False
+    if bottom_a > top_b: return False
+    
+
+    return True
 
