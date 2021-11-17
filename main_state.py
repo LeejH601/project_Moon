@@ -21,7 +21,8 @@ def enter():
     game_world.add_object(Player._instance, 1)
     # game_world.add_object(stage(), 0)
     print(game_world.objects)
-    stage.show_rooms_info(stage)
+    stage.in_to_dungeon()
+    # stage.show_rooms_info(stage)
 
 
 def exit():
@@ -50,11 +51,12 @@ def update(deltatime):
     for game_object in game_world.all_objects():
         game_object.update(deltatime)
 
-    gates = stage.cur_room.get_gateList()
-    for gate in gates:
-        if collider(gate, Player._instance):
-            # print("!!!collsion!!!!")
-            stage.EnterRoom(stage, gate.get_linked_ID())
+    if stage.place_trigger == 1:
+        gates = stage.cur_room.get_gateList()
+        for gate in gates:
+            if collider(gate, Player._instance):
+                # print("!!!collsion!!!!")
+                stage.EnterRoom(stage, gate.get_linked_ID())
 
 
 def draw():

@@ -8,17 +8,31 @@ class stage(Object):
     background_image = None
     rooms = []
     room_indexs = {}
+    home = None
+    home_image = None
 
     cur_room = None
+
+    place_trigger = 0
 
     def __init__(self):
         if stage.background_image == None:
             stage.background_image = load_image('sprite\stage\Background.png')
+        if stage.home_image == None: 
+            stage.home_image = load_image('sprite\shop\shop_new_version_lv1_background_ok.png')
         game_world.add_object(self, 0)
-        stage.MakeRooms(1)
-        self.cur_room.room_in()
+        stage.place_trigger = 0
+        stage.home = Room(100,stage.home_image,0)
+        
+        # stage.MakeRooms(1)
+        # self.cur_room.room_in()
         # game_world.add_objects(self.cur_room.get_gateList(), 0)
         pass
+
+    def in_to_dungeon():
+        stage.MakeRooms(1)
+        stage.place_trigger = 1
+        stage.cur_room.room_in()
 
     def show_rooms_info(self):
         print('now_room: ', self.cur_room.get_ID())
@@ -30,7 +44,7 @@ class stage(Object):
     def MakeRooms(level):
         rm_count = random.randint(0,2) + 5 + level * 2
         n_id = 35
-        stage.rooms.append(Room(n_id,stage.background_image))
+        stage.rooms.append(Room(n_id,stage.background_image, 1))
         stage.room_indexs[n_id] = 0
         stage.cur_room = stage.rooms[0]
         ids = [-1,1,-10,10]
@@ -51,7 +65,7 @@ class stage(Object):
                         if t_id == new_roomId+ids[0] or t_id == new_roomId+ids[1] or t_id == new_roomId+ids[2] or t_id == new_roomId+ids[3]:
                             adjacent_count += 1
                     if adjacent_count < 3:
-                        stage.rooms.append(Room(new_roomId,stage.background_image))
+                        stage.rooms.append(Room(new_roomId,stage.background_image, 1))
                         stage.room_indexs[new_roomId] = len(stage.rooms)-1
                         flag = False
                 room_index = random.randint(0,len(stage.rooms)-1)
@@ -83,19 +97,24 @@ class stage(Object):
         pass
 
     def update(self, deltatime):
-        stage.cur_room.update(deltatime)
+        if stage.place_trigger == 1:
+            stage.cur_room.update(deltatime)
+        else:
+            stage.home.update(deltatime)
 
     def rendering(self):
-        stage.cur_room.rendering()
+        if stage.place_trigger == 1:
+            stage.cur_room.rendering()
+        else:
+            stage.home.rendering()
 
             
     
 
 class Room(Object):
-
-    monster_list = []
     
-    def __init__(self, _id, _bkimage):
+    
+    def __init__(self, _id, _bkimage, flag):
         # if Room.Door_image == None:
         #     Room.Door_image = []
         #     for i in range(1, 11+1):
@@ -103,7 +122,10 @@ class Room(Object):
         self.room_Id = _id
         Room.image = _bkimage
         self.gates = []
-        self.monster_list.append(GollemKnight(200, 400, 50, 5))
+        self.flag = flag
+        if flag == 1:
+            self.monster_list = []
+            self.monster_list.append(GollemKnight(200, 400, 50, 5))
         # self.monster_on_world()
         pass
 
@@ -139,7 +161,10 @@ class Room(Object):
         return super().update(deltatime)
 
     def rendering(self):
-        self.image.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
+        if self.flag == 1:
+            self.image.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
+        else:
+            self.image.draw_to_origin(0,0, self.image.w*s_size, self.image.h*s_size)
         for gate in self.gates:
             gate.rendering()
         pass

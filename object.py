@@ -44,5 +44,8 @@ class Object:
         self.locate[1] = clamp(0, self.locate[1], Screen_size[1] - 40)
         return self.locate
 
+    def Set_rectSize(self, w, h):
+        self.rect_size = [w, h]
+
     def collision(self):
         pass

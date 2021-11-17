@@ -361,6 +361,7 @@ class SwordAttackState:
         
 
     def exit(player, event):
+        player.velocity = [0 , 0]
         pass
 
     def do(player, deltatime):
@@ -405,10 +406,11 @@ class SwordAttackState:
         
 
     def draw(player):
+        my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].h*s_size
         if player.direct[0]*10+player.direct[1] in SwordAttackState.image:
-            SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         else:
-            SwordAttackState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            SwordAttackState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         if player.direct[0]*10+player.direct[1] in SwordAttackState.sword_image:
             sword_frame = int(player.frame)
             x, y = player.locate
@@ -420,8 +422,10 @@ class SwordAttackState:
                 else:
                     x, y = x + SwordAttackState.correction_place[player.direct[0]*10+player.direct[1]][sword_frame][0]*s_size, y - SwordAttackState.correction_place[player.direct[0]*10+player.direct[1]][sword_frame][1]*s_size
                     SwordAttackState.temp = -1
+            print('d: ', player.direct, 'c: ', SwordAttackState.correction_place[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp])
             w_w, w_h = SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].w, SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].h
             x, y = x, y + SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].h*s_size - w_h*s_size
+            print('player locate : ', player.locate,'sprite loacte : ', x, y)
             # print('player place: ', player.locate)
             # print('sword place: ', x, y)
             SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].draw_to_origin(x, y,w_w*s_size,w_h*s_size)     
@@ -743,6 +747,7 @@ class Player(Object, Singleton):
 
     def rendering(self):
         self.cur_state.draw(self)
+        draw_rectangle(*self.get_rect())
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
