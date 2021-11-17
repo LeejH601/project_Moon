@@ -20,7 +20,7 @@ def enter():
     _stage = stage()
     game_world.add_object(Player._instance, 1)
     # game_world.add_object(stage(), 0)
-    # print(game_world.objects)
+    print(game_world.objects)
     stage.show_rooms_info(stage)
 
 

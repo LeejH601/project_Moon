@@ -5,6 +5,7 @@ class Object:
     health = 0
     speed = 0
     direct = [0, -1]
+    previous_direct = [0, -1]
     rect_size = [0, 0]
     
     image = None
@@ -27,10 +28,10 @@ class Object:
         pass
 
     def set_direct(self, _direct):
-        pass
+        self.direct = _direct
 
     def get_direct(self):
-        pass
+        return self.direct
 
     def get_locate(self):
         return self.locate

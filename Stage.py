@@ -1,4 +1,5 @@
 from random import randint
+from Monster import *
 from Player import Player
 from modules import *
 from object import Object
@@ -15,6 +16,7 @@ class stage(Object):
             stage.background_image = load_image('sprite\stage\Background.png')
         game_world.add_object(self, 0)
         stage.MakeRooms(1)
+        self.cur_room.room_in()
         # game_world.add_objects(self.cur_room.get_gateList(), 0)
         pass
 
@@ -73,7 +75,9 @@ class stage(Object):
         new_ID = dir_ID
         for gate in gates:
             if new_ID == gate.get_linked_ID():
+                self.cur_room.room_out()
                 self.cur_room = self.rooms[self.room_indexs[new_ID]]
+                self.cur_room.room_in()
                 pass
         self.show_rooms_info(self)
         pass
@@ -88,7 +92,8 @@ class stage(Object):
     
 
 class Room(Object):
-    moster_list = []
+
+    monster_list = []
     
     def __init__(self, _id, _bkimage):
         # if Room.Door_image == None:
@@ -98,7 +103,22 @@ class Room(Object):
         self.room_Id = _id
         Room.image = _bkimage
         self.gates = []
+        self.monster_list.append(GollemKnight(200, 400, 50, 5))
+        # self.monster_on_world()
         pass
+
+    def room_in(self):
+        self.monster_on_world()
+
+    def room_out(self):
+        self.monster_out_world()
+
+    def monster_on_world(self):
+        game_world.add_objects(self.monster_list, 1)
+
+    def monster_out_world(self):
+        for i in range(len(self.monster_list)):
+            game_world.remove_object(self.monster_list[i])
 
     def add_gate(self, _ID):
         ngate = Gate(_ID, self.room_Id)
