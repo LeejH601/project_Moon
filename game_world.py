@@ -20,6 +20,16 @@ def remove_object(o):
             break
 
 
+def get_player_instacne():
+    for i in range(len(objects)):
+        _name = objects[1][i].get_name()
+        # print(_name)
+        try :
+            if _name == 'player':
+                return objects[1][i]
+        except:
+            print(objects[1][i])
+    return None
 
 
 def clear():

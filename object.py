@@ -1,7 +1,9 @@
 from modules import *
 
 class Object:
+    name = None
     locate = [0, 0]
+    Atk = 0
     health = 0
     speed = 0
     direct = [0, -1]
@@ -27,6 +29,12 @@ class Object:
     def handle_event(self, event):
         pass
 
+    def set_name(self, _name):
+        self.name = _name
+
+    def get_name(self):
+        return self.name
+
     def set_direct(self, _direct):
         self.direct = _direct
 
@@ -38,6 +46,12 @@ class Object:
 
     def get_rect(self):
         return self.locate[0], self.locate[1], self.locate[0] + self.rect_size[0], self.locate[1] + self.rect_size[1]
+
+    def set_atk(self, _atk):
+        self.Atk = _atk
+
+    def hit(self, demage):
+        self.health -= demage
 
     def myclamp(self):
         self.locate[0] = clamp(0, self.locate[0], Screen_size[0] - 40)

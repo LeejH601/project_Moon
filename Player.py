@@ -1,5 +1,6 @@
 from math import fabs
 from object import *
+from Stage import stage
 
 history = []
 
@@ -73,10 +74,11 @@ class IdleState:
         player.frame = (player.frame + IdleState.FRAMES_PER_ACTION * IdleState.ACTION_PER_TIME * deltatime) % IdleState.FRAMES_PER_ACTION
 
     def draw(player):
+        my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].h*s_size
         if player.direct[0]*10+player.direct[1]:
-            IdleState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            IdleState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         else:
-            IdleState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            IdleState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
 
 
 class RunState:
@@ -101,7 +103,8 @@ class RunState:
 
     def enter(player, event):
         player.frame = 0
-        player.previous_direct = player.direct
+        if event == RIGHT_DOWN or event == LEFT_DOWN or event == TOP_DOWN or event == BOTTOM_DOWN :
+            player.previous_direct = player.direct
         # player.direct = [0, 0]
         if event == RIGHT_DOWN and RunState.key_able[0] == False:
             player.velocity[0] += 1
@@ -180,6 +183,8 @@ class RunState:
         elif event == BOTTOM_UP:
                 player.velocity[1] += 1
 
+        player.previous_direct = player.direct
+
         if event == RIGHT_UP:
             RunState.key_able[0] = False
         elif event == LEFT_UP:
@@ -196,10 +201,11 @@ class RunState:
         player.locate = player.myclamp()
 
     def draw(player):
+        my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].h*s_size
         if player.direct[0]*10+player.direct[1] in RunState.image and player.vector != [0,0]:
-            RunState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            RunState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         elif player.vector == [0, 0]:
-            IdleState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            IdleState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         # else:
         #     RunState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
 
@@ -265,10 +271,11 @@ class EvasionState:
             EvasionState.now_evasion = False
 
     def draw(player):
+        my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].h*s_size
         if player.direct[0]*10+player.direct[1] in EvasionState.image:
-            EvasionState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            EvasionState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         else:
-            EvasionState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            EvasionState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
 
 
 class SwordAttackState:
@@ -303,6 +310,9 @@ class SwordAttackState:
                     [(0, 5),(-19, 5),(-15, 6),(-9, 0),(20, 17),(-11, 5),(-11, 2),(-8, 0),(0, 8),(-15, 5),(-11, 5),(-7, 6),(27, 8),(25, 10),(25, 10),(25, 10),(25, 10),
                     ]
     
+    bonding_box = []
+
+    monster_hit_table = []
 
     def __init__(self):
         if SwordAttackState.image == None:
@@ -327,6 +337,8 @@ class SwordAttackState:
 
 
     def enter(player, event):
+        SwordAttackState.monster_hit_table.clear()
+        SwordAttackState.monster_hit_table = [ [False, False, False] for i in range(len(stage.cur_room.get_monsterList()))]
         if SwordAttackState.now_Atk == False:
 
             # if SwordAttackState.Atk_Stack >= 3:
@@ -362,6 +374,7 @@ class SwordAttackState:
 
     def exit(player, event):
         player.velocity = [0 , 0]
+        SwordAttackState.Atk_Stack = 0
         pass
 
     def do(player, deltatime):
@@ -392,16 +405,26 @@ class SwordAttackState:
                 if event.type == SDL_KEYDOWN and event.key == SDLK_j and SwordAttackState.is_continue_1 == False:
                    SwordAttackState.is_continue_1 = True
                    print("스택 1 입력")
+                   SwordAttackState.Atk_Stack += 1
         elif player.frame > 5 and player.frame < 9:
             events = get_events()
             for event in events:
                 if event.type == SDL_KEYDOWN and event.key == SDLK_j and SwordAttackState.is_continue_2 == False:
                    SwordAttackState.is_continue_2 = True
                    print("스택 2 입력")
-
+                   SwordAttackState.Atk_Stack += 1
 
         
         player.locate = player.myclamp()
+        x, y = player.locate[0] + player.direct[0] * player.rect_size[0], player.locate[1] + player.direct[1] * player.rect_size[1]
+        SwordAttackState.bonding_box = [x, y, x + player.rect_size[0], y + player.rect_size[1]]
+
+        monsterList = stage.cur_room.get_monsterList()
+        for i in range(len(monsterList)):
+            if SwordAttackState.collider(SwordAttackState, SwordAttackState.bonding_box, monsterList[i]) and SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] == False:
+                print("MOnster HIT!!!!!!!!")
+                monsterList[i].hit(player.Atk)
+                SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] = True
 
         
 
@@ -422,13 +445,26 @@ class SwordAttackState:
                 else:
                     x, y = x + SwordAttackState.correction_place[player.direct[0]*10+player.direct[1]][sword_frame][0]*s_size, y - SwordAttackState.correction_place[player.direct[0]*10+player.direct[1]][sword_frame][1]*s_size
                     SwordAttackState.temp = -1
-            print('d: ', player.direct, 'c: ', SwordAttackState.correction_place[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp])
+            # print('d: ', player.direct, 'c: ', SwordAttackState.correction_place[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp])
             w_w, w_h = SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].w, SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].h
             x, y = x, y + SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].h*s_size - w_h*s_size
-            print('player locate : ', player.locate,'sprite loacte : ', x, y)
+            # print('player locate : ', player.locate,'sprite loacte : ', x, y)
             # print('player place: ', player.locate)
             # print('sword place: ', x, y)
             SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].draw_to_origin(x, y,w_w*s_size,w_h*s_size)     
+        draw_rectangle(*SwordAttackState.bonding_box)
+
+    def collider(self, my_rect, b):
+        left_a, bottom_a, right_a, top_a = my_rect
+        left_b, bottom_b, right_b, top_b = b.get_rect()
+
+        if left_a > right_b: return False
+        if right_a < left_b: return False
+        if top_a < bottom_b: return False
+        if bottom_a > top_b: return False
+    
+        return True
+
 
 
 class DeffenseSwitchState:
@@ -494,10 +530,11 @@ class DeffenseSwitchState:
         
 
     def draw(player):
+        my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].h*s_size
         if player.direct[0]*10+player.direct[1] in DeffenseSwitchState.image:
-            DeffenseSwitchState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            DeffenseSwitchState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         else:
-            DeffenseSwitchState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            DeffenseSwitchState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
 
 
 class SwordDeffenseState:
@@ -573,10 +610,11 @@ class SwordDeffenseState:
         
 
     def draw(player):
+        my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].h*s_size
         if player.direct[0]*10+player.direct[1] in SwordDeffenseState.image:
-            SwordDeffenseState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            SwordDeffenseState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         else:
-            SwordDeffenseState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            SwordDeffenseState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
 
 
 class DeffesedRunState:
@@ -680,10 +718,11 @@ class DeffesedRunState:
         player.locate = player.myclamp()
 
     def draw(player):
+        my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].h*s_size
         if player.direct[0]*10+player.direct[1] in DeffesedRunState.image and player.vector != [0,0]:
-            DeffesedRunState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            DeffesedRunState.image[player.direct[0]*10+player.direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         elif player.vector == [0, 0]:
-            SwordDeffenseState.image[player.direct[0]*10+player.direct[1]][0].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
+            SwordDeffenseState.image[player.direct[0]*10+player.direct[1]][0].draw_to_origin(player.locate[0], player.locate[1], *my_rect_size)
         # else:
         #     RunState.image[player.previous_direct[0]*10+player.previous_direct[1]][int(player.frame)].draw_to_origin(player.locate[0], player.locate[1], player.rect_size[0], player.rect_size[1])
 
@@ -696,7 +735,7 @@ next_state_table = {
                  SPACE: EvasionState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: DeffenseSwitchState},
     EvasionState : {RIGHT_DOWN: EvasionState, LEFT_DOWN: EvasionState, RIGHT_UP: EvasionState, LEFT_UP: EvasionState, TOP_UP: EvasionState, TOP_DOWN: EvasionState, BOTTOM_UP: EvasionState, BOTTOM_DOWN: EvasionState,
                  SPACE: EvasionState, ATTACK_DOWN: EvasionState, ATTACK_UP: EvasionState, SATTACK_DOWN: EvasionState, SATTACK_UP: EvasionState, EVASION_TIMER: IdleState},
-    SwordAttackState: {ATTACK_DOWN: SwordAttackState, ATK_TIMER: IdleState},
+    SwordAttackState: {ATK_TIMER: IdleState},
     DeffenseSwitchState: {SWITCH_TIMER: SwordDeffenseState, SATTACK_UP: IdleState},
     SwordDeffenseState : {RIGHT_DOWN: DeffesedRunState, LEFT_DOWN: DeffesedRunState,  TOP_DOWN: DeffesedRunState,  BOTTOM_DOWN: DeffesedRunState,
                  SPACE: EvasionState, ATTACK_DOWN: SwordAttackState, ATTACK_UP: SwordAttackState, SATTACK_DOWN: SwordDeffenseState, SATTACK_UP: IdleState},
@@ -732,6 +771,8 @@ class Player(Object, Singleton):
 
     def __init__(self, _x, _y, _health, _speed):
         super().__init__(_x, _y, _health, _speed)
+        self.set_name('player')
+        self.set_atk(25)
         IdleState()
         RunState()
         EvasionState()
@@ -739,7 +780,7 @@ class Player(Object, Singleton):
         DeffenseSwitchState()
         SwordDeffenseState()
         DeffesedRunState()
-        self.rect_size = [IdleState.image[1][0].w*s_size, IdleState.image[1][0].h*s_size]
+        self.rect_size = [IdleState.image[1][0].w*s_size, IdleState.image[1][0].w*s_size]
         Player.direct = [0, -1]
         Player.previous_direct = [0, -1]
         self.cur_state.enter(self, None)
@@ -778,5 +819,8 @@ class Player(Object, Singleton):
 
     def add_event(self, event):
         self.event_que.insert(0, event)
+
+
+    
 
     pass

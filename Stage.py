@@ -1,6 +1,5 @@
 from random import randint
 from Monster import *
-from Player import Player
 from modules import *
 from object import Object
 
@@ -23,11 +22,14 @@ class stage(Object):
         game_world.add_object(self, 0)
         stage.place_trigger = 0
         stage.home = Room(100,stage.home_image,0)
-        
+        stage.set_name(self, 'stage')
         # stage.MakeRooms(1)
         # self.cur_room.room_in()
         # game_world.add_objects(self.cur_room.get_gateList(), 0)
         pass
+
+    def get_name(self):
+        return super().get_name()
 
     def in_to_dungeon():
         stage.MakeRooms(1)
@@ -83,7 +85,7 @@ class stage(Object):
 
 
     def EnterRoom(self, dir_ID):
-        Player._instance.locate = [Screen_size[0]/2, Screen_size[1]/2]
+        game_world.get_player_instacne().locate = [Screen_size[0]/2, Screen_size[1]/2]
         gates = self.cur_room.get_gateList()
         now_ID = self.cur_room.get_ID()
         new_ID = dir_ID
@@ -127,6 +129,7 @@ class Room(Object):
             self.monster_list = []
             self.monster_list.append(GollemKnight(200, 400, 50, 5))
         # self.monster_on_world()
+        self.set_name('room')
         pass
 
     def room_in(self):
@@ -141,6 +144,9 @@ class Room(Object):
     def monster_out_world(self):
         for i in range(len(self.monster_list)):
             game_world.remove_object(self.monster_list[i])
+
+    def get_monsterList(self):
+        return self.monster_list
 
     def add_gate(self, _ID):
         ngate = Gate(_ID, self.room_Id)
@@ -196,7 +202,7 @@ class Gate(Object):
         elif self.direct == [1, 0]: # 90
             self.locate = [Screen_size[0] - self.image[0].h, Screen_size[1] / 2]
             self.rad = -math.pi/2
-
+        self.set_name('gate')
 
         pass
 

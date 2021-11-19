@@ -2,7 +2,7 @@ from time import time
 
 deltatime = 0
 t = 0.0
-dt = 1 / 60.0
+dt = 1 / 150.0
 current_time = 0
 frame_time = 0
 accumulator = 0.0
@@ -104,9 +104,9 @@ def run(start_state):
             stack[-1].update(dt)
             accumulator -= dt
             t += dt
+        stack[-1].update(accumulator)
         stack[-1].draw()
 
-        stack[-1].update(accumulator)
         accumulator = 0
         # print(frame_time)
 

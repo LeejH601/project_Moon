@@ -1,6 +1,5 @@
 from math import dist, sqrt
 from object import *
-from Player import Player
 
 
 monster_status_table = {'slime': [50, 5], 'gollem': [100, 10]}
@@ -30,12 +29,15 @@ class Monster(Object):
     def __init__(self, _x, _y, _health, _speed, _direct=[0, -1]):
         super().__init__(_x, _y, _health, _speed, _direct)
         self.Set_Speed(_speed)
+        self.set_name('monster')
 
     def rendering(self):
         self.cur_state.draw(self)
         draw_rectangle(*self.get_rect())
 
     def update(self, deltatime):
+        if self.health <= 0.0:
+            game_world.remove_object(self)
         self.cur_state.do(self, deltatime)
         if len(self.event_que) > 0:
             event = self.event_que.pop()
@@ -122,7 +124,7 @@ class GollemKnight(Monster):
             gollem.frame = (gollem.frame + gollem.IdleState.FRAMES_PER_ACTION * gollem.IdleState.ACTION_PER_TIME * deltatime) % gollem.IdleState.FRAMES_PER_ACTION
             left_a, bottom_a, right_a, top_a = gollem.get_rect()
             my_rect = (left_a - 200, bottom_a - 200, right_a + 200, top_a + 200)
-            if gollem.collider(my_rect, Player._instance):
+            if gollem.collider(my_rect, game_world.get_player_instacne()):
                 if gollem.atk_delay < 0.0:
                     gollem.add_event(2)
 
@@ -243,7 +245,7 @@ class GollemKnight(Monster):
         def do(gollem, deltatime):
             gollem.frame = (gollem.frame + gollem.ChaseState.FRAMES_PER_ACTION * gollem.ChaseState.ACTION_PER_TIME * deltatime) % gollem.ChaseState.FRAMES_PER_ACTION
 
-            vector = [Player._instance.locate[0] - gollem.locate[0], Player._instance.locate[1] - gollem.locate[1]]
+            vector = [game_world.get_player_instacne().locate[0] - gollem.locate[0], game_world.get_player_instacne().locate[1] - gollem.locate[1]]
             weight = sqrt(vector[0]**2 + vector[1]**2)
             vector = [vector[0]/ weight * gollem.RUN_SPEED_PPS, vector[1]/ weight * gollem.RUN_SPEED_PPS]
 
@@ -259,7 +261,7 @@ class GollemKnight(Monster):
 
             left_a, bottom_a, right_a, top_a = gollem.get_rect()
             my_rect = (left_a - 50, bottom_a - 50, right_a + 50, top_a + 50)
-            if gollem.collider(my_rect, Player._instance) and gollem.atk_delay <= 0.0:
+            if gollem.collider(my_rect, game_world.get_player_instacne()) and gollem.atk_delay <= 0.0:
                 gollem.add_event(1)
 
 
