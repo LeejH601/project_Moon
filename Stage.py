@@ -128,6 +128,7 @@ class Room(Object):
         if flag == 1:
             self.monster_list = []
             self.monster_list.append(GollemKnight(200, 400, 50, 5))
+            self.monster_list.append(SmallSlime(600, 400, 25, 3))
         # self.monster_on_world()
         self.set_name('room')
         pass
