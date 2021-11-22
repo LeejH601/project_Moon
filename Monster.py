@@ -284,6 +284,209 @@ class SmallSlime(Monster):
         self.atk_delay -= game_framework.frame_time
         return super().update(deltatime)
 
+class BigSlime(Monster):
+
+    class IdleState:
+
+        image = None
+
+        TIME_PER_ACTION = 1.0
+        ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+        FRAMES_PER_ACTION = 1
+
+        def __init__(self):
+            BigSlime.IdleState.__instance = self
+            if BigSlime.IdleState.image == None:
+                BigSlime.IdleState.image = defaultdict(list)
+                BigSlime.IdleState.image[-1].append(load_image('sprite\monster\slime_walk_1.png'))
+                BigSlime.IdleState.image[1].append(load_image('sprite\monster\slime_walk_1.png'))
+                BigSlime.IdleState.image[-10].append(load_image('sprite\monster\slime_walk_1.png'))
+                BigSlime.IdleState.image[10].append(load_image('sprite\monster\slime_walk_1.png'))
+                BigSlime.IdleState.image[0] = BigSlime.IdleState.image[-1]
+            
+
+        def enter(babeslime, event):
+            babeslime.frame = 0
+            babeslime.IdleState.image[0] = babeslime.IdleState.image[babeslime.previous_direct[0]*10+babeslime.previous_direct[1]]
+            babeslime.previous_direct = babeslime.direct
+                
+            babeslime.direct[0] = clamp(-1, babeslime.direct[0], 1)
+            babeslime.direct[1] = clamp(-1, babeslime.direct[1], 1)
+        
+
+        def exit(babeslime, event):
+            pass
+
+        def do(babeslime, deltatime):
+            babeslime.frame = (babeslime.frame + babeslime.IdleState.FRAMES_PER_ACTION * babeslime.IdleState.ACTION_PER_TIME * deltatime) % babeslime.IdleState.FRAMES_PER_ACTION
+            left_a, bottom_a, right_a, top_a = babeslime.get_rect()
+            my_rect = (left_a - 200, bottom_a - 200, right_a + 200, top_a + 200)
+            if babeslime.collider(my_rect, game_world.get_player_instacne()):
+                if babeslime.atk_delay < 0.0:
+                    babeslime.add_event(2)
+
+        def draw(babeslime):
+            if babeslime.direct[0]*10+babeslime.direct[1]:
+                babeslime.IdleState.image[babeslime.direct[0]*10+babeslime.direct[1]][int(babeslime.frame)].draw_to_origin(babeslime.locate[0], babeslime.locate[1], babeslime.rect_size[0], babeslime.rect_size[1])
+            else:
+                babeslime.IdleState.image[babeslime.previous_direct[0]*10+babeslime.previous_direct[1]][int(babeslime.frame)].draw_to_origin(babeslime.locate[0], babeslime.locate[1], babeslime.rect_size[0], babeslime.rect_size[1])
+
+
+    class AttackState:
+
+        image = None
+
+        TIME_PER_ACTION = 1.5
+        ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+        FRAMES_PER_ACTION = 16
+
+        def __init__(self):
+            BigSlime.AttackState.__instance = self
+            if BigSlime.AttackState.image == None:
+                BigSlime.AttackState.image = defaultdict(list)
+                for i in range(0+1, 17):
+                    BigSlime.AttackState.image[-1].append(load_image('sprite\monster\slime_hit_attack_'+str(i)+'.png'))
+                    BigSlime.AttackState.image[1].append(load_image('sprite\monster\slime_hit_attack_'+str(i)+'.png'))
+                    BigSlime.AttackState.image[-10].append(load_image('sprite\monster\slime_hit_attack_'+str(i)+'.png'))
+                    BigSlime.AttackState.image[10].append(load_image('sprite\monster\slime_hit_attack_'+str(i)+'.png'))
+                    BigSlime.AttackState.image[0] = BigSlime.AttackState.image[-1]
+
+                
+            
+
+        def enter(bbslime, event):
+            bbslime.frame = 0
+            bbslime.AttackState.image[0] = bbslime.AttackState.image[bbslime.previous_direct[0]*10+bbslime.previous_direct[1]]
+            bbslime.previous_direct = bbslime.direct
+                
+            bbslime.direct[0] = clamp(-1, bbslime.direct[0], 1)
+            bbslime.direct[1] = clamp(-1, bbslime.direct[1], 1)
+        
+
+        def exit(bbslime, event):
+            bbslime.atk_delay = 5.0
+            pass
+
+        def do(bbslime, deltatime):
+
+            if bbslime.frame > bbslime.AttackState.FRAMES_PER_ACTION - 0.5:
+                bbslime.add_event(0)
+
+            bbslime.frame = (bbslime.frame + bbslime.AttackState.FRAMES_PER_ACTION * bbslime.AttackState.ACTION_PER_TIME * deltatime) % bbslime.AttackState.FRAMES_PER_ACTION
+
+
+            # left_a, bottom_a, right_a, top_a = gollem.get_rect()
+            # my_rect = (left_a - 50, bottom_a - 50, right_a + 50, top_a + 50)
+            # if gollem.collider(my_rect, Player._instance):
+            #     gollem.add_event(1)
+
+
+        def draw(bbslime):
+            w, h = bbslime.AttackState.image[bbslime.direct[0]*10+bbslime.direct[1]][int(bbslime.frame)].w, bbslime.AttackState.image[bbslime.direct[0]*10+bbslime.direct[1]][int(bbslime.frame)].h
+            if bbslime.direct[0]*10+bbslime.direct[1]:
+                bbslime.AttackState.image[bbslime.direct[0]*10+bbslime.direct[1]][int(bbslime.frame)].draw_to_origin(bbslime.locate[0], bbslime.locate[1], w*s_size, h*s_size)
+            else:
+                bbslime.AttackState.image[bbslime.previous_direct[0]*10+bbslime.previous_direct[1]][int(bbslime.frame)].draw_to_origin(bbslime.locate[0], bbslime.locate[1], w*s_size, h*s_size)
+
+
+    class RunState:
+        pass
+
+
+    class ChaseState:
+
+        image = None
+
+        TIME_PER_ACTION = 1.0
+        ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+        FRAMES_PER_ACTION = 8
+
+        def __init__(self):
+            BigSlime.ChaseState.__instance = self
+            if BigSlime.ChaseState.image == None:
+                BigSlime.ChaseState.image = defaultdict(list)
+                for i in range(0+1, 9):
+                    BigSlime.ChaseState.image[-1].append(load_image('sprite\monster\slime_walk_'+str(i)+'.png'))
+                    BigSlime.ChaseState.image[1].append(load_image('sprite\monster\slime_walk_'+str(i)+'.png'))
+                    BigSlime.ChaseState.image[-10].append(load_image('sprite\monster\slime_walk_'+str(i)+'.png'))
+                    BigSlime.ChaseState.image[10].append(load_image('sprite\monster\slime_walk_'+str(i)+'.png'))
+                    BigSlime.ChaseState.image[0] = BigSlime.ChaseState.image[-1]
+            
+
+        def enter(bbslime, event):
+            bbslime.frame = 0
+            bbslime.ChaseState.image[0] = bbslime.ChaseState.image[bbslime.previous_direct[0]*10+bbslime.previous_direct[1]]
+            bbslime.previous_direct = bbslime.direct
+                
+            bbslime.direct[0] = clamp(-1, bbslime.direct[0], 1)
+            bbslime.direct[1] = clamp(-1, bbslime.direct[1], 1)
+        
+
+        def exit(bbslime, event):
+            pass
+
+        def do(bbslime, deltatime):
+            bbslime.frame = (bbslime.frame + bbslime.ChaseState.FRAMES_PER_ACTION * bbslime.ChaseState.ACTION_PER_TIME * deltatime) % bbslime.ChaseState.FRAMES_PER_ACTION
+
+            vector = [game_world.get_player_instacne().locate[0] - bbslime.locate[0], game_world.get_player_instacne().locate[1] - bbslime.locate[1]]
+            weight = sqrt(vector[0]**2 + vector[1]**2)
+            vector = [vector[0]/ weight * bbslime.RUN_SPEED_PPS, vector[1]/ weight * bbslime.RUN_SPEED_PPS]
+
+            bbslime.locate[0] += vector[0] * deltatime
+            bbslime.locate[1] += vector[1] * deltatime
+
+            if abs(vector[0]) > abs(vector[1]):
+                if vector[0] > 0: bbslime.direct = [1, 0]
+                else : bbslime.direct = [-1, 0]
+            else :
+                if vector[1] > 0: bbslime.direct = [0, 1]
+                else : bbslime.direct = [0, -1]
+
+            left_a, bottom_a, right_a, top_a = bbslime.get_rect()
+            my_rect = (left_a - 50, bottom_a - 50, right_a + 50, top_a + 50)
+            if bbslime.collider(my_rect, game_world.get_player_instacne()) and bbslime.atk_delay <= 0.0:
+                bbslime.add_event(1)
+
+
+        def draw(bbslime):
+            w, h = bbslime.ChaseState.image[bbslime.direct[0]*10+bbslime.direct[1]][int(bbslime.frame)].w, bbslime.ChaseState.image[bbslime.direct[0]*10+bbslime.direct[1]][int(bbslime.frame)].h
+            if bbslime.direct[0]*10+bbslime.direct[1]:
+                bbslime.ChaseState.image[bbslime.direct[0]*10+bbslime.direct[1]][int(bbslime.frame)].draw_to_origin(bbslime.locate[0], bbslime.locate[1],w*s_size, h*s_size)
+            else:
+                bbslime.ChaseState.image[bbslime.previous_direct[0]*10+bbslime.previous_direct[1]][int(bbslime.frame)].draw_to_origin(bbslime.locate[0], bbslime.locate[1], w*s_size, h*s_size)
+
+
+    direct = None
+
+    atk_delay = 0
+
+    def __init__(self, _x, _y, _health, _speed, _direct=[0, -1]):
+        super().__init__(_x, _y, _health, _speed, _direct)
+        self.IdleState()
+        self.AttackState()
+        self.RunState()
+        self.ChaseState()
+        N_table = {
+            self.IdleState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState, self.my_event_list['detect'] : self.ChaseState },
+            self.RunState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState },
+            self.AttackState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState },
+            self.ChaseState : {self.my_event_list['near'] : self.AttackState, self.my_event_list['faraway'] : self.IdleState}
+        }
+        # self.my_state_table()
+        self.direct = self.get_direct()
+        self.Set_next_state_table(N_table)
+        self.Set_rectSize(self.IdleState.image[-1][0].w*s_size, self.IdleState.image[-1][0].h*s_size)
+        self.Set_cur_state(self.IdleState)
+        self.cur_state.enter(self, None)
+        
+
+    def rendering(self):
+        return super().rendering()
+
+    def update(self, deltatime):
+        self.atk_delay -= game_framework.frame_time
+        return super().update(deltatime)
+
 class GollemKnight(Monster):
 
     class IdleState:
@@ -343,7 +546,7 @@ class GollemKnight(Monster):
 
         image = None
 
-        TIME_PER_ACTION = 4
+        TIME_PER_ACTION = 2.5
         ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
         FRAMES_PER_ACTION = 13
 

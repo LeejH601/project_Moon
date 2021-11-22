@@ -44,6 +44,7 @@ class stage(Object):
             print('')
 
     def MakeRooms(level):
+        healPlace_flag = False
         rm_count = random.randint(0,2) + 5 + level * 2
         n_id = 35
         stage.rooms.append(Room(n_id,stage.background_image, 1))
@@ -114,21 +115,38 @@ class stage(Object):
     
 
 class Room(Object):
-    
+    image = None
+
+    dungeon_light = None
+    dungeon_shadow = None
+
+    bk_light = None
+    bk_shadow = None
     
     def __init__(self, _id, _bkimage, flag):
         # if Room.Door_image == None:
         #     Room.Door_image = []
         #     for i in range(1, 11+1):
         #         Room.Door_image.append(load_image('golem_basic_doors'+str(i)+'.png'))
+        if Room.dungeon_light == None:
+            Room.dungeon_light = []
+            for i in range(1, 8):
+                Room.dungeon_light.append( load_image('sprite\stage\Golem_Lights_' + str(i) +'.png'))
+        if Room.dungeon_shadow == None:
+            Room.dungeon_shadow = []
+            for i in range(1, 7):
+                Room.dungeon_shadow.append( load_image('sprite\stage\Golem_Shadow_' + str(i) +'.png'))
         self.room_Id = _id
         Room.image = _bkimage
+        self.bk_light = Room.dungeon_light[randint(0, 6)]
+        self.bk_shadow = Room.dungeon_shadow[randint(0, 5)]
         self.gates = []
         self.flag = flag
         if flag == 1:
             self.monster_list = []
             self.monster_list.append(GollemKnight(200, 400, 50, 5))
             self.monster_list.append(SmallSlime(600, 400, 25, 3))
+            self.monster_list.append(BigSlime(600, 100, 50, 3))
         # self.monster_on_world()
         self.set_name('room')
         pass
@@ -170,6 +188,8 @@ class Room(Object):
     def rendering(self):
         if self.flag == 1:
             self.image.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
+            self.bk_shadow.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
+            self.bk_light.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
         else:
             self.image.draw_to_origin(0,0, self.image.w*s_size, self.image.h*s_size)
         for gate in self.gates:

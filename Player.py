@@ -279,7 +279,7 @@ class EvasionState:
 
 
 class SwordAttackState:
-    TIME_PER_ACTION = 2.3
+    TIME_PER_ACTION = 2.0
     ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
     FRAMES_PER_ACTION = 18
 
