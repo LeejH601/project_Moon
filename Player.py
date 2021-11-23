@@ -423,6 +423,8 @@ class SwordAttackState:
         for i in range(len(monsterList)):
             if SwordAttackState.collider(SwordAttackState, SwordAttackState.bonding_box, monsterList[i]) and SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] == False:
                 print("MOnster HIT!!!!!!!!")
+                print(monsterList[i])
+
                 monsterList[i].hit(player.Atk)
                 SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] = True
 

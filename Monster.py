@@ -11,12 +11,11 @@ class Monster(Object):
     RUN_SPEED_MPS = 0
     RUN_SPEED_PPS = 0
 
-    event_que = []
     cur_state = None
 
     vector = None
 
-    my_event_list = {'faraway': 0, 'near': 1, 'detect': 2}
+    my_event_list = {'faraway': 0, 'near': 1, 'detect': 2, 'hit': 3, 'hitTimer': 4}
     my_state_table = None
     my_next_state_table = None
 
@@ -30,6 +29,7 @@ class Monster(Object):
         super().__init__(_x, _y, _health, _speed, _direct)
         self.Set_Speed(_speed)
         self.set_name('monster')
+        self.event_que = []
 
     def rendering(self):
         self.cur_state.draw(self)
@@ -41,6 +41,8 @@ class Monster(Object):
         self.cur_state.do(self, deltatime)
         if len(self.event_que) > 0:
             event = self.event_que.pop()
+            if event == 3:
+                print('여기')
             if event in self.my_next_state_table[self.cur_state]:
                 self.cur_state.exit(self, event)
                 self.cur_state = self.my_next_state_table[self.cur_state][event]
@@ -78,6 +80,9 @@ class Monster(Object):
         if bottom_a > top_b: return False
     
         return True
+
+    def hit(self, demage):
+        return super().hit(demage)
 
     pass
 
@@ -240,7 +245,7 @@ class SmallSlime(Monster):
                 else : bbslime.direct = [0, -1]
 
             left_a, bottom_a, right_a, top_a = bbslime.get_rect()
-            my_rect = (left_a - 50, bottom_a - 50, right_a + 50, top_a + 50)
+            my_rect = (left_a - 30, bottom_a - 30, right_a + 30, top_a + 30)
             if bbslime.collider(my_rect, game_world.get_player_instacne()) and bbslime.atk_delay <= 0.0:
                 bbslime.add_event(1)
 
@@ -253,6 +258,66 @@ class SmallSlime(Monster):
                 bbslime.ChaseState.image[bbslime.previous_direct[0]*10+bbslime.previous_direct[1]][int(bbslime.frame)].draw_to_origin(bbslime.locate[0], bbslime.locate[1], w*s_size, h*s_size)
 
 
+    class HitState:
+
+        image = None
+
+        TIME_PER_ACTION = 1.0
+        ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+        FRAMES_PER_ACTION = 1
+
+        hit_timer = None
+        knockback_trigger = False
+
+        def __init__(self):
+            SmallSlime.HitState.__instance = self
+            if SmallSlime.HitState.image == None:
+                SmallSlime.HitState.image = defaultdict(list)
+                SmallSlime.HitState.image[-1].append(load_image('sprite\monster\Babyslime_idle.png'))
+                SmallSlime.HitState.image[1].append(load_image('sprite\monster\Babyslime_idle.png'))
+                SmallSlime.HitState.image[-10].append(load_image('sprite\monster\Babyslime_idle.png'))
+                SmallSlime.HitState.image[10].append(load_image('sprite\monster\Babyslime_idle.png'))
+                SmallSlime.HitState.image[0] = SmallSlime.HitState.image[-1]
+            
+
+        def enter(babeslime, event):
+            print(babeslime)
+            babeslime.frame = 0
+            babeslime.HitState.image[0] = babeslime.HitState.image[babeslime.previous_direct[0]*10+babeslime.previous_direct[1]]
+            babeslime.previous_direct = babeslime.direct
+                
+            babeslime.direct[0] = clamp(-1, babeslime.direct[0], 1)
+            babeslime.direct[1] = clamp(-1, babeslime.direct[1], 1)
+
+            babeslime.hit_timer = 1.0
+            babeslime.knockback_trigger = False
+            
+            print('Enter HitState!!!!!!!!!!')
+        
+
+        def exit(babeslime, event):
+            pass
+
+        def do(babeslime, deltatime):
+            babeslime.frame = (babeslime.frame + babeslime.HitState.FRAMES_PER_ACTION * babeslime.HitState.ACTION_PER_TIME * deltatime) % babeslime.HitState.FRAMES_PER_ACTION
+            if babeslime.knockback_trigger == False:
+                vector = [-babeslime.direct[0]*babeslime.RUN_SPEED_PPS, -babeslime.direct[1]*babeslime.RUN_SPEED_PPS]
+
+                babeslime.locate[0] +=  vector[0]
+                babeslime.locate[1] +=  vector[1]
+                babeslime.knockback_trigger = True
+            
+            if babeslime.hit_timer <= 0.0:
+                babeslime.add_event(4)
+            babeslime.hit_timer -= game_framework.frame_time
+
+        def draw(babeslime):
+            if babeslime.direct[0]*10+babeslime.direct[1]:
+                babeslime.HitState.image[babeslime.direct[0]*10+babeslime.direct[1]][int(babeslime.frame)].draw_to_origin(babeslime.locate[0], babeslime.locate[1], babeslime.rect_size[0], babeslime.rect_size[1])
+            else:
+                babeslime.HitState.image[babeslime.previous_direct[0]*10+babeslime.previous_direct[1]][int(babeslime.frame)].draw_to_origin(babeslime.locate[0], babeslime.locate[1], babeslime.rect_size[0], babeslime.rect_size[1])
+
+
     direct = None
 
     atk_delay = 0
@@ -263,11 +328,13 @@ class SmallSlime(Monster):
         self.AttackState()
         self.RunState()
         self.ChaseState()
+        self.HitState()
         N_table = {
-            self.IdleState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState, self.my_event_list['detect'] : self.ChaseState },
-            self.RunState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState },
+            self.IdleState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState, self.my_event_list['detect'] : self.ChaseState, self.my_event_list['hit'] : self.HitState },
+            self.RunState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState, self.my_event_list['hit'] : self.HitState },
             self.AttackState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState },
-            self.ChaseState : {self.my_event_list['near'] : self.AttackState, self.my_event_list['faraway'] : self.IdleState}
+            self.ChaseState : {self.my_event_list['near'] : self.AttackState, self.my_event_list['faraway'] : self.IdleState, self.my_event_list['hit'] : self.HitState},
+            self.HitState : {self.my_event_list['hitTimer'] : self.IdleState}
         }
         # self.my_state_table()
         self.direct = self.get_direct()
@@ -283,6 +350,10 @@ class SmallSlime(Monster):
     def update(self, deltatime):
         self.atk_delay -= game_framework.frame_time
         return super().update(deltatime)
+
+    def hit(self, demage):
+        self.add_event(3)
+        return super().hit(demage)
 
 class BigSlime(Monster):
 
