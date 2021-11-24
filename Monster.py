@@ -11,14 +11,6 @@ class Monster(Object):
     RUN_SPEED_MPS = 0
     RUN_SPEED_PPS = 0
 
-    cur_state = None
-
-    vector = None
-
-    my_event_list = {'faraway': 0, 'near': 1, 'detect': 2, 'hit': 3, 'hitTimer': 4}
-    my_state_table = None
-    my_next_state_table = None
-
     def Set_Speed(self, _speed = 1):
         self.RUN_SPEED_KMPH = _speed
         self.RUN_SPEED_MPM = (self.RUN_SPEED_KMPH * 1000.0 / 60.0)
@@ -30,6 +22,15 @@ class Monster(Object):
         self.Set_Speed(_speed)
         self.set_name('monster')
         self.event_que = []
+        
+
+        self.cur_state = None
+
+        self.vector = None
+
+        self.my_event_list = {'faraway': 0, 'near': 1, 'detect': 2, 'hit': 3, 'hitTimer': 4}
+        self.my_state_table = None
+        self.my_next_state_table = None
 
     def rendering(self):
         self.cur_state.draw(self)
@@ -124,7 +125,7 @@ class SmallSlime(Monster):
             left_a, bottom_a, right_a, top_a = babeslime.get_rect()
             my_rect = (left_a - 200, bottom_a - 200, right_a + 200, top_a + 200)
             if babeslime.collider(my_rect, game_world.get_player_instacne()):
-                if babeslime.atk_delay < 0.0:
+                # if babeslime.atk_delay < 0.0:
                     babeslime.add_event(2)
 
         def draw(babeslime):
@@ -230,24 +231,26 @@ class SmallSlime(Monster):
         def do(bbslime, deltatime):
             bbslime.frame = (bbslime.frame + bbslime.ChaseState.FRAMES_PER_ACTION * bbslime.ChaseState.ACTION_PER_TIME * deltatime) % bbslime.ChaseState.FRAMES_PER_ACTION
 
-            vector = [game_world.get_player_instacne().locate[0] - bbslime.locate[0], game_world.get_player_instacne().locate[1] - bbslime.locate[1]]
-            weight = sqrt(vector[0]**2 + vector[1]**2)
-            vector = [vector[0]/ weight * bbslime.RUN_SPEED_PPS, vector[1]/ weight * bbslime.RUN_SPEED_PPS]
-
-            bbslime.locate[0] += vector[0] * deltatime
-            bbslime.locate[1] += vector[1] * deltatime
-
-            if abs(vector[0]) > abs(vector[1]):
-                if vector[0] > 0: bbslime.direct = [1, 0]
-                else : bbslime.direct = [-1, 0]
-            else :
-                if vector[1] > 0: bbslime.direct = [0, 1]
-                else : bbslime.direct = [0, -1]
-
+            
             left_a, bottom_a, right_a, top_a = bbslime.get_rect()
             my_rect = (left_a - 30, bottom_a - 30, right_a + 30, top_a + 30)
-            if bbslime.collider(my_rect, game_world.get_player_instacne()) and bbslime.atk_delay <= 0.0:
-                bbslime.add_event(1)
+            if bbslime.collider(my_rect, game_world.get_player_instacne()):
+                if bbslime.atk_delay <= 0.0:
+                    bbslime.add_event(1)
+            else:
+                vector = [game_world.get_player_instacne().locate[0] - bbslime.locate[0], game_world.get_player_instacne().locate[1] - bbslime.locate[1]]
+                weight = sqrt(vector[0]**2 + vector[1]**2)
+                vector = [vector[0]/ weight * bbslime.RUN_SPEED_PPS, vector[1]/ weight * bbslime.RUN_SPEED_PPS]
+
+                bbslime.locate[0] += vector[0] * deltatime
+                bbslime.locate[1] += vector[1] * deltatime
+
+                if abs(vector[0]) > abs(vector[1]):
+                    if vector[0] > 0: bbslime.direct = [1, 0]
+                    else : bbslime.direct = [-1, 0]
+                else :
+                    if vector[1] > 0: bbslime.direct = [0, 1]
+                    else : bbslime.direct = [0, -1]
 
 
         def draw(bbslime):
@@ -301,7 +304,8 @@ class SmallSlime(Monster):
         def do(babeslime, deltatime):
             babeslime.frame = (babeslime.frame + babeslime.HitState.FRAMES_PER_ACTION * babeslime.HitState.ACTION_PER_TIME * deltatime) % babeslime.HitState.FRAMES_PER_ACTION
             if babeslime.knockback_trigger == False:
-                vector = [-babeslime.direct[0]*babeslime.RUN_SPEED_PPS, -babeslime.direct[1]*babeslime.RUN_SPEED_PPS]
+                p_instance = game_world.get_player_instacne()
+                vector = [p_instance.direct[0]*babeslime.RUN_SPEED_PPS, p_instance.direct[1]*babeslime.RUN_SPEED_PPS]
 
                 babeslime.locate[0] +=  vector[0]
                 babeslime.locate[1] +=  vector[1]
@@ -309,7 +313,7 @@ class SmallSlime(Monster):
             
             if babeslime.hit_timer <= 0.0:
                 babeslime.add_event(4)
-            babeslime.hit_timer -= game_framework.frame_time
+            babeslime.hit_timer -= deltatime
 
         def draw(babeslime):
             if babeslime.direct[0]*10+babeslime.direct[1]:
@@ -348,7 +352,7 @@ class SmallSlime(Monster):
         return super().rendering()
 
     def update(self, deltatime):
-        self.atk_delay -= game_framework.frame_time
+        self.atk_delay -= deltatime
         return super().update(deltatime)
 
     def hit(self, demage):
@@ -393,7 +397,7 @@ class BigSlime(Monster):
             left_a, bottom_a, right_a, top_a = babeslime.get_rect()
             my_rect = (left_a - 200, bottom_a - 200, right_a + 200, top_a + 200)
             if babeslime.collider(my_rect, game_world.get_player_instacne()):
-                if babeslime.atk_delay < 0.0:
+                # if babeslime.atk_delay < 0.0:
                     babeslime.add_event(2)
 
         def draw(babeslime):
@@ -499,24 +503,25 @@ class BigSlime(Monster):
         def do(bbslime, deltatime):
             bbslime.frame = (bbslime.frame + bbslime.ChaseState.FRAMES_PER_ACTION * bbslime.ChaseState.ACTION_PER_TIME * deltatime) % bbslime.ChaseState.FRAMES_PER_ACTION
 
-            vector = [game_world.get_player_instacne().locate[0] - bbslime.locate[0], game_world.get_player_instacne().locate[1] - bbslime.locate[1]]
-            weight = sqrt(vector[0]**2 + vector[1]**2)
-            vector = [vector[0]/ weight * bbslime.RUN_SPEED_PPS, vector[1]/ weight * bbslime.RUN_SPEED_PPS]
-
-            bbslime.locate[0] += vector[0] * deltatime
-            bbslime.locate[1] += vector[1] * deltatime
-
-            if abs(vector[0]) > abs(vector[1]):
-                if vector[0] > 0: bbslime.direct = [1, 0]
-                else : bbslime.direct = [-1, 0]
-            else :
-                if vector[1] > 0: bbslime.direct = [0, 1]
-                else : bbslime.direct = [0, -1]
-
             left_a, bottom_a, right_a, top_a = bbslime.get_rect()
             my_rect = (left_a - 50, bottom_a - 50, right_a + 50, top_a + 50)
-            if bbslime.collider(my_rect, game_world.get_player_instacne()) and bbslime.atk_delay <= 0.0:
-                bbslime.add_event(1)
+            if bbslime.collider(my_rect, game_world.get_player_instacne()) :
+                if bbslime.atk_delay <= 0.0:
+                    bbslime.add_event(1)
+            else:
+                vector = [game_world.get_player_instacne().locate[0] - bbslime.locate[0], game_world.get_player_instacne().locate[1] - bbslime.locate[1]]
+                weight = sqrt(vector[0]**2 + vector[1]**2)
+                vector = [vector[0]/ weight * bbslime.RUN_SPEED_PPS, vector[1]/ weight * bbslime.RUN_SPEED_PPS]
+
+                bbslime.locate[0] += vector[0] * deltatime
+                bbslime.locate[1] += vector[1] * deltatime
+
+                if abs(vector[0]) > abs(vector[1]):
+                    if vector[0] > 0: bbslime.direct = [1, 0]
+                    else : bbslime.direct = [-1, 0]
+                else :
+                    if vector[1] > 0: bbslime.direct = [0, 1]
+                    else : bbslime.direct = [0, -1]
 
 
         def draw(bbslime):
@@ -555,7 +560,7 @@ class BigSlime(Monster):
         return super().rendering()
 
     def update(self, deltatime):
-        self.atk_delay -= game_framework.frame_time
+        self.atk_delay -= deltatime
         return super().update(deltatime)
 
 class GollemKnight(Monster):
@@ -599,7 +604,7 @@ class GollemKnight(Monster):
             left_a, bottom_a, right_a, top_a = gollem.get_rect()
             my_rect = (left_a - 200, bottom_a - 200, right_a + 200, top_a + 200)
             if gollem.collider(my_rect, game_world.get_player_instacne()):
-                if gollem.atk_delay < 0.0:
+                # if gollem.atk_delay < 0.0:
                     gollem.add_event(2)
 
         def draw(gollem):
@@ -719,24 +724,27 @@ class GollemKnight(Monster):
         def do(gollem, deltatime):
             gollem.frame = (gollem.frame + gollem.ChaseState.FRAMES_PER_ACTION * gollem.ChaseState.ACTION_PER_TIME * deltatime) % gollem.ChaseState.FRAMES_PER_ACTION
 
-            vector = [game_world.get_player_instacne().locate[0] - gollem.locate[0], game_world.get_player_instacne().locate[1] - gollem.locate[1]]
-            weight = sqrt(vector[0]**2 + vector[1]**2)
-            vector = [vector[0]/ weight * gollem.RUN_SPEED_PPS, vector[1]/ weight * gollem.RUN_SPEED_PPS]
-
-            gollem.locate[0] += vector[0] * deltatime
-            gollem.locate[1] += vector[1] * deltatime
-
-            if abs(vector[0]) > abs(vector[1]):
-                if vector[0] > 0: gollem.direct = [1, 0]
-                else : gollem.direct = [-1, 0]
-            else :
-                if vector[1] > 0: gollem.direct = [0, 1]
-                else : gollem.direct = [0, -1]
+            
 
             left_a, bottom_a, right_a, top_a = gollem.get_rect()
             my_rect = (left_a - 50, bottom_a - 50, right_a + 50, top_a + 50)
-            if gollem.collider(my_rect, game_world.get_player_instacne()) and gollem.atk_delay <= 0.0:
-                gollem.add_event(1)
+            if gollem.collider(my_rect, game_world.get_player_instacne()) :
+                if gollem.atk_delay <= 0.0:
+                    gollem.add_event(1)
+            else:
+                vector = [game_world.get_player_instacne().locate[0] - gollem.locate[0], game_world.get_player_instacne().locate[1] - gollem.locate[1]]
+                weight = sqrt(vector[0]**2 + vector[1]**2)
+                vector = [vector[0]/ weight * gollem.RUN_SPEED_PPS, vector[1]/ weight * gollem.RUN_SPEED_PPS]
+
+                gollem.locate[0] += vector[0] * deltatime
+                gollem.locate[1] += vector[1] * deltatime
+
+                if abs(vector[0]) > abs(vector[1]):
+                    if vector[0] > 0: gollem.direct = [1, 0]
+                    else : gollem.direct = [-1, 0]
+                else :
+                    if vector[1] > 0: gollem.direct = [0, 1]
+                    else : gollem.direct = [0, -1]
 
 
         def draw(gollem):
@@ -754,6 +762,70 @@ class GollemKnight(Monster):
             return self.__instance
         pass
 
+    class HitState:
+
+        image = None
+
+        TIME_PER_ACTION = 1.0
+        ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+        FRAMES_PER_ACTION = 1
+
+        hit_timer = None
+        knockback_trigger = False
+
+        def __init__(self):
+            GollemKnight.HitState.__instance = self
+            if GollemKnight.HitState.image == None:
+                GollemKnight.HitState.image = defaultdict(list)
+                # GollemKnight.HitState.image[-1].append(load_image('sprite\monster\Babyslime_idle.png'))
+                # GollemKnight.HitState.image[1].append(load_image('sprite\monster\Babyslime_idle.png'))
+                # GollemKnight.HitState.image[-10].append(load_image('sprite\monster\Babyslime_idle.png'))
+                # GollemKnight.HitState.image[10].append(load_image('sprite\monster\Babyslime_idle.png'))
+                # GollemKnight.HitState.image[0] = GollemKnight.HitState.image[-1]
+            
+
+        def enter(mob, event):
+            print(mob)
+            mob.frame = 0
+            # mob.HitState.image[0] = mob.HitState.image[mob.previous_direct[0]*10+mob.previous_direct[1]]
+            mob.IdleState.image[0] = mob.IdleState.image[mob.previous_direct[0]*10+mob.previous_direct[1]]
+            mob.previous_direct = mob.direct
+                
+            mob.direct[0] = clamp(-1, mob.direct[0], 1)
+            mob.direct[1] = clamp(-1, mob.direct[1], 1)
+
+            mob.hit_timer = 1.0
+            mob.knockback_trigger = False
+            
+            print('Enter HitState!!!!!!!!!!')
+        
+
+        def exit(mob, event):
+            pass
+
+        def do(mob, deltatime):
+            mob.frame = (mob.frame + mob.HitState.FRAMES_PER_ACTION * mob.HitState.ACTION_PER_TIME * deltatime) % mob.HitState.FRAMES_PER_ACTION
+            if mob.knockback_trigger == False:
+                p_instance = game_world.get_player_instacne()
+                vector = [p_instance.direct[0]*mob.RUN_SPEED_PPS, p_instance.direct[1]*mob.RUN_SPEED_PPS]
+
+                mob.locate[0] +=  vector[0]
+                mob.locate[1] +=  vector[1]
+                mob.knockback_trigger = True
+            
+            if mob.hit_timer <= 0.0:
+                mob.add_event(4)
+            mob.hit_timer -= deltatime
+
+        def draw(mob):
+            w, h = mob.IdleState.image[mob.direct[0]*10+mob.direct[1]][int(mob.frame)].w, mob.IdleState.image[mob.direct[0]*10+mob.direct[1]][int(mob.frame)].h
+            if mob.direct[0]*10+mob.direct[1]:
+                mob.IdleState.image[mob.direct[0]*10+mob.direct[1]][int(mob.frame)].draw_to_origin(mob.locate[0], mob.locate[1],w*s_size, h*s_size)
+            else:
+                mob.IdleState.image[mob.previous_direct[0]*10+mob.previous_direct[1]][int(mob.frame)].draw_to_origin(mob.locate[0], mob.locate[1], w*s_size, h*s_size)
+
+
+
     direct = None
 
     atk_delay = 0
@@ -764,11 +836,13 @@ class GollemKnight(Monster):
         self.AttackState()
         self.RunState()
         self.ChaseState()
+        self.HitState()
         N_table = {
-            self.IdleState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState, self.my_event_list['detect'] : self.ChaseState },
-            self.RunState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState },
+            self.IdleState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState, self.my_event_list['detect'] : self.ChaseState, self.my_event_list['hit'] : self.HitState },
+            self.RunState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState, self.my_event_list['hit'] : self.HitState },
             self.AttackState : {self.my_event_list['faraway'] : self.IdleState, self.my_event_list['near'] : self.AttackState },
-            self.ChaseState : {self.my_event_list['near'] : self.AttackState, self.my_event_list['faraway'] : self.IdleState}
+            self.ChaseState : {self.my_event_list['near'] : self.AttackState, self.my_event_list['faraway'] : self.IdleState, self.my_event_list['hit'] : self.HitState},
+            self.HitState : {self.my_event_list['hitTimer'] : self.IdleState}
         }
         # self.my_state_table()
         self.direct = self.get_direct()
@@ -782,7 +856,7 @@ class GollemKnight(Monster):
         return super().rendering()
 
     def update(self, deltatime):
-        self.atk_delay -= game_framework.frame_time
+        self.atk_delay -= deltatime
         return super().update(deltatime)
         
 

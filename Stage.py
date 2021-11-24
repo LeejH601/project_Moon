@@ -143,8 +143,8 @@ class Room(Object):
         self.gates = []
         self.flag = flag
         if flag == 1:
-            # room_pattern = randint(0,2)
-            room_pattern = 0
+            room_pattern = randint(0,2)
+            # room_pattern = 0
             self.monster_list = []
             if room_pattern == 0:
                 self.monster_list.append(SmallSlime(200, 500, 50, 3))
