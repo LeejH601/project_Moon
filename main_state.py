@@ -17,6 +17,7 @@ font = None
 
 def enter():
     player = Player(Screen_size[0]/2, Screen_size[1]/2, 100,5)
+    
     _stage = stage()
     game_world.add_object(Player._instance, 1)
     # game_world.add_object(stage(), 0)
