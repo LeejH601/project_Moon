@@ -97,15 +97,20 @@ def run(start_state):
 
     while (running):
         stack[-1].handle_events()
+        is_update = False
         accumulator += frame_time
         while accumulator >= dt:
+            is_update = True
             # deltatime = min(frame_time, dt)
             # deltatime = min(frame_time, dt)
             stack[-1].update(dt)
             accumulator -= dt
             t += dt
-        stack[-1].update(accumulator)
-        stack[-1].draw()
+        if not accumulator <= 0.0:
+            is_update = True
+            stack[-1].update(accumulator)
+        if is_update == True:
+            stack[-1].draw()
 
         accumulator = 0
         # print(frame_time)

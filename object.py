@@ -19,6 +19,9 @@ class Object:
         self.health = _health
         self.speed = _speed
         self.direct = _direct
+        self.frame = 0
+        self.previous_direct = _direct
+        
 
     def update(self, deltatime):
         pass

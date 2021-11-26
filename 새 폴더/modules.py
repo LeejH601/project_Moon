@@ -4,6 +4,7 @@ from collections import defaultdict
 from time import time
 import math
 import game_world
+import Server
 
 states = {'NONE': 'NONE','MOVE': 'MOVE','DEAD': 'DEAD','ATTACK': 'ATTACK', 'SATTACK': 'SATTACK','IDLE': 'IDLE', 'ROLL': 'ROLL', 'SSWORD': 'SSWORD', 'SSHIELD': 'SSHIELD','HSHIELD': 'HSHIELD', 'SHEILDWALK': 'SHEILDWALK'}
 directs = {'up':0,'right':1,'down':2,'left':3}
