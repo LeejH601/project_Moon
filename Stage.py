@@ -145,7 +145,7 @@ class Room(Object):
         self.flag = flag
         if flag == 1:
             room_pattern = randint(0,2)
-            room_pattern = 0
+            room_pattern = 2
             self.monster_list = []
             if room_pattern == 0:
                 self.monster_list.append(SmallSlime(200, 500, 50, 3))
@@ -153,18 +153,19 @@ class Room(Object):
                 self.monster_list.append(SmallSlime(800, 200, 50, 3))
                 self.monster_list.append(SmallSlime(800, 500, 50, 3))
                 pass
-            # elif room_pattern == 1:
-            #     self.monster_list.append(GollemKnight(200, 500, 100, 3))
-            #     self.monster_list.append(SmallSlime(200, 200, 25, 3))
-            #     self.monster_list.append(GollemKnight(800, 200, 100, 3))
-            #     self.monster_list.append(SmallSlime(800, 500, 25, 3))
-            #     pass
-            # elif room_pattern == 2:
-            #     self.monster_list.append(BigSlime(500, 300, 50, 3))
-            #     self.monster_list.append(SmallSlime(200, 500, 25, 3))
-            #     self.monster_list.append(SmallSlime(200, 200, 25, 3))
-            #     self.monster_list.append(SmallSlime(800, 200, 25, 3))
-            #     self.monster_list.append(SmallSlime(800, 500, 25, 3))
+            elif room_pattern == 1:
+                self.monster_list.append(GollemKnight(200, 500, 100, 3))
+                self.monster_list.append(SmallSlime(200, 200, 25, 3))
+                self.monster_list.append(GollemKnight(800, 200, 100, 3))
+                self.monster_list.append(SmallSlime(800, 500, 25, 3))
+                pass
+            elif room_pattern == 2:
+                self.monster_list.append(GolemBoss(500, 300, 100, 3))
+                # self.monster_list.append(BigSlime(500, 300, 50, 3))
+                # self.monster_list.append(SmallSlime(200, 500, 25, 3))
+                # self.monster_list.append(SmallSlime(200, 200, 25, 3))
+                # self.monster_list.append(SmallSlime(800, 200, 25, 3))
+                # self.monster_list.append(SmallSlime(800, 500, 25, 3))
             #     pass
             # self.monster_list.append(GollemKnight(200, 400, 50, 5))
             # self.monster_list.append(BigSlime(600, 100, 50, 3))
@@ -179,7 +180,7 @@ class Room(Object):
 
     def room_out(self):
         self.monster_out_world()
-        Server.monsters.clear()
+        Server.monsters = None
 
     def monster_on_world(self):
         game_world.add_objects(self.monster_list, 1)

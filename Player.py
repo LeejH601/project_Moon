@@ -310,8 +310,6 @@ class SwordAttackState:
                     [(0, 5),(-19, 5),(-15, 6),(-9, 0),(20, 17),(-11, 5),(-11, 2),(-8, 0),(0, 8),(-15, 5),(-11, 5),(-7, 6),(27, 8),(25, 10),(25, 10),(25, 10),(25, 10),
                     ]
     
-    bonding_box = []
-
     monster_hit_table = []
 
     def __init__(self):
@@ -375,6 +373,7 @@ class SwordAttackState:
     def exit(player, event):
         player.velocity = [0 , 0]
         SwordAttackState.Atk_Stack = 0
+        Player.bounding_box = None
         pass
 
     def do(player, deltatime):
@@ -417,16 +416,16 @@ class SwordAttackState:
         
         player.locate = player.myclamp()
         x, y = player.locate[0] + player.direct[0] * player.rect_size[0], player.locate[1] + player.direct[1] * player.rect_size[1]
-        SwordAttackState.bonding_box = [x, y, x + player.rect_size[0], y + player.rect_size[1]]
+        Player.bounding_box = [x, y, x + player.rect_size[0], y + player.rect_size[1]]
 
-        monsterList = stage.cur_room.get_monsterList()
-        for i in range(len(monsterList)):
-            if SwordAttackState.collider(SwordAttackState, SwordAttackState.bonding_box, monsterList[i]) and SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] == False:
-                print("MOnster HIT!!!!!!!!")
-                print(monsterList[i])
+        # monsterList = stage.cur_room.get_monsterList()
+        # for i in range(len(monsterList)):
+        #     if SwordAttackState.collider(SwordAttackState, SwordAttackState.bounding_box, monsterList[i]) and SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] == False:
+        #         print("MOnster HIT!!!!!!!!")
+        #         print(monsterList[i])
 
-                monsterList[i].hit(player.Atk)
-                SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] = True
+        #         monsterList[i].hit(player.Atk)
+        #         SwordAttackState.monster_hit_table[i][SwordAttackState.Atk_Stack] = True
 
         
 
@@ -454,7 +453,7 @@ class SwordAttackState:
             # print('player place: ', player.locate)
             # print('sword place: ', x, y)
             SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].draw_to_origin(x, y,w_w*s_size,w_h*s_size)     
-        draw_rectangle(*SwordAttackState.bonding_box)
+        draw_rectangle(*Player.bounding_box)
 
     def collider(self, my_rect, b):
         left_a, bottom_a, right_a, top_a = my_rect
@@ -786,6 +785,7 @@ class Player(Object, Singleton):
         Player.direct = [0, -1]
         Player.previous_direct = [0, -1]
         self.cur_state.enter(self, None)
+        Player.bounding_box = None
         print(self.locate)
 
     def rendering(self):
@@ -822,6 +822,10 @@ class Player(Object, Singleton):
     def add_event(self, event):
         self.event_que.insert(0, event)
 
+    
+    def demaged_by_mob(self, value):
+        self.health -= value
+        print("으악!  ---  ", self.health)
 
     
 
