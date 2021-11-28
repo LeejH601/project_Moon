@@ -69,7 +69,8 @@ class stage(Object):
                         if t_id == new_roomId+ids[0] or t_id == new_roomId+ids[1] or t_id == new_roomId+ids[2] or t_id == new_roomId+ids[3]:
                             adjacent_count += 1
                     if adjacent_count < 3:
-                        stage.rooms.append(Room(new_roomId,stage.background_image, 1))
+                        if len(stage.rooms)+1 == rm_count : stage.rooms.append(Room(new_roomId,stage.background_image, 3))
+                        else : stage.rooms.append(Room(new_roomId,stage.background_image, 1))
                         stage.room_indexs[new_roomId] = len(stage.rooms)-1
                         flag = False
                 room_index = random.randint(0,len(stage.rooms)-1)
@@ -145,7 +146,7 @@ class Room(Object):
         self.flag = flag
         if flag == 1:
             room_pattern = randint(0,2)
-            room_pattern = 2
+            # room_pattern = 2
             self.monster_list = []
             if room_pattern == 0:
                 self.monster_list.append(SmallSlime(200, 500, 50, 3))
@@ -160,12 +161,14 @@ class Room(Object):
                 self.monster_list.append(SmallSlime(800, 500, 25, 3))
                 pass
             elif room_pattern == 2:
-                self.monster_list.append(GolemBoss(500, 300, 100, 3))
-                # self.monster_list.append(BigSlime(500, 300, 50, 3))
-                # self.monster_list.append(SmallSlime(200, 500, 25, 3))
-                # self.monster_list.append(SmallSlime(200, 200, 25, 3))
-                # self.monster_list.append(SmallSlime(800, 200, 25, 3))
-                # self.monster_list.append(SmallSlime(800, 500, 25, 3))
+                self.monster_list.append(BigSlime(500, 300, 50, 3))
+                self.monster_list.append(SmallSlime(200, 500, 25, 3))
+                self.monster_list.append(SmallSlime(200, 200, 25, 3))
+                self.monster_list.append(SmallSlime(800, 200, 25, 3))
+                self.monster_list.append(SmallSlime(800, 500, 25, 3))
+        elif flag == 3:
+            self.monster_list = []
+            self.monster_list.append(GolemBoss(500, 300, 400, 3))
             #     pass
             # self.monster_list.append(GollemKnight(200, 400, 50, 5))
             # self.monster_list.append(BigSlime(600, 100, 50, 3))

@@ -28,6 +28,7 @@ class Monster(Object):
         self.is_myAtkHit = False
         self.is_stiffness = True
         self.Attack_Frame = 0
+        self.now_offensing = False
 
     def Set_Speed(self, _speed = 1):
         RUN_SPEED_KMPH = _speed
@@ -160,6 +161,7 @@ class Monster(Object):
             self.atk_delay = self.atk_rate
             self.bounding_box = None
             self.is_stiffness = True
+            self.now_offensing = False
             return BehaviorTree.SUCCESS
         else:
             self.Timer_Attack -= self.m_deltatime
@@ -738,7 +740,7 @@ class GolemBoss(Monster):
         self.Set_rectSize(self.image_idle[-1][0].w*s_size, self.image_idle[-1][0].h*s_size)
         self.atk_rate = 3.0
         self.build_behavior_tree()
-        self.now_offensing = False
+        
 
     def update(self, deltatime):
         return super().update(deltatime)
@@ -756,8 +758,15 @@ class GolemBoss(Monster):
         self.Actions = GolemBoss.DeadAction
         return super().dead()
 
+    def Find_Player(self):
+        if self.now_offensing:
+            return BehaviorTree.SUCCESS
+        return super().Find_Player()
+
 
     def move_to_player(self):
+        if self.now_offensing:
+            return BehaviorTree.SUCCESS
         self.cur_images = GolemBoss.image_move
         self.Actions = GolemBoss.MoveAction
         left_a, bottom_a, right_a, top_a = self.get_rect()
@@ -765,11 +774,13 @@ class GolemBoss(Monster):
         if self.collider(my_rect, Server.player) :
             self.RUN_SPEED_PPS = 0.0
             if self.atk_delay <= 0.0:
-                if self.atk_pettern == 0:
-                    self.Timer_Attack = self.AttackAction.TIME_PER_ACTION
-                else:
-                    self.Timer_Attack = self.SmashAction.TIME_PER_ACTION
-                self.is_myAtkHit = False
+                if not self.now_offensing:
+                    self.atk_pettern = random.randint(0, 1)
+                    if self.atk_pettern == 0:
+                        self.Timer_Attack = self.AttackAction.TIME_PER_ACTION
+                    else:
+                        self.Timer_Attack = self.SmashAction.TIME_PER_ACTION
+                    self.is_myAtkHit = False
                 return BehaviorTree.SUCCESS
             else:
                 self.now_offensing = False
@@ -797,6 +808,12 @@ class GolemBoss(Monster):
     def Smash(self):
         self.cur_images = GolemBoss.image_smash
         self.Actions = GolemBoss.SmashAction
+        x, y = self.locate[0] + self.rect_size[0]/2, self.locate[1] + self.rect_size[1]/2
+        if self.bounding_box == None:
+            self.bounding_box = [x, y, x, y]
+        if self.frame >= 5:   
+            self.bounding_box = [self.bounding_box[0] - Screen_size[0]*self.m_deltatime/3, self.bounding_box[1] - Screen_size[1]*self.m_deltatime/3,\
+                self.bounding_box[2] + Screen_size[0]*self.m_deltatime/3, self.bounding_box[3] + Screen_size[1]*self.m_deltatime/3]
         return super().Attack_to_Player()
 
     def Attack_Pattern(self):
