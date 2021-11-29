@@ -1,6 +1,7 @@
 import random
 import json
 import os
+from Inventory import Inventory
 from Player import Player
 from Stage import stage
 
@@ -25,6 +26,10 @@ def enter():
     print(game_world.objects)
     stage.in_to_dungeon()
     # stage.show_rooms_info(stage)
+    _inventory = Inventory()
+    Server.inventory = _inventory
+    # game_world.add_object(_inventory, 2)
+    
 
 
 def exit():
@@ -44,21 +49,28 @@ def handle_events():
     for event in events:
         if event.type == SDL_QUIT:
             game_framework.quit()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_i:
+            Server.inven_trigger = not Server.inven_trigger
+            if Server.inven_trigger == True:
+                game_world.add_object(Server.inventory, 2)
+            else:
+                game_world.remove_object(Server.inventory)
         else:
             Player._instance.handle_event(event)
     pass
 
 
 def update(deltatime):
-    for game_object in game_world.all_objects():
-        game_object.update(deltatime)
+    if not Server.inven_trigger:
+        for game_object in game_world.all_objects():
+            game_object.update(deltatime)
 
-    if stage.place_trigger == 1:
-        gates = stage.cur_room.get_gateList()
-        for gate in gates:
-            if collider(gate, Player._instance):
-                # print("!!!collsion!!!!")
-                stage.EnterRoom(stage, gate.get_linked_ID())
+        if stage.place_trigger == 1:
+            gates = stage.cur_room.get_gateList()
+            for gate in gates:
+                if collider(gate, Player._instance):
+                    # print("!!!collsion!!!!")
+                    stage.EnterRoom(stage, gate.get_linked_ID())
 
 
 def draw():

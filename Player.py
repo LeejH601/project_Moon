@@ -453,7 +453,8 @@ class SwordAttackState:
             # print('player place: ', player.locate)
             # print('sword place: ', x, y)
             SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].draw_to_origin(x, y,w_w*s_size,w_h*s_size)     
-        draw_rectangle(*Player.bounding_box)
+        if Player.bounding_box:
+            draw_rectangle(*Player.bounding_box)
 
     def collider(self, my_rect, b):
         left_a, bottom_a, right_a, top_a = my_rect
@@ -465,7 +466,6 @@ class SwordAttackState:
         if bottom_a > top_b: return False
     
         return True
-
 
 
 class DeffenseSwitchState:
