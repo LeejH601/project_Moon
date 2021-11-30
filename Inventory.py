@@ -1,17 +1,35 @@
 import pico2d
-from pico2d.pico2d import Font
+from pico2d.pico2d import Font, debug_print
+from pico2d.sdl2.events import *
+from pico2d.sdl2.keycode import *
 from Item import *
 from modules import Screen_size
 import Server
 
+RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN = range(9)
+
+
+key_event_table = {
+    (SDL_KEYDOWN, SDLK_d): RIGHT_DOWN,
+    (SDL_KEYDOWN, SDLK_a): LEFT_DOWN,
+    (SDL_KEYUP, SDLK_d): RIGHT_UP,
+    (SDL_KEYUP, SDLK_a): LEFT_UP,
+    (SDL_KEYDOWN, SDLK_w): TOP_DOWN,
+    (SDL_KEYDOWN, SDLK_s): BOTTOM_DOWN,
+    (SDL_KEYUP, SDLK_w): TOP_UP,
+    (SDL_KEYUP, SDLK_s): BOTTOM_UP,
+}
+
 class Inventory:
     
+
     inven_player = None
     inven_bag = None
 
-    inven_cursor = 0
+    inven_cursor = 5
 
     handing_item = None
+    slot_effect_image = None
 
     back_image = None
     image_rect_size = [523, 271]
@@ -20,14 +38,18 @@ class Inventory:
 
     box_size = 25*2
 
-    box_interval = 10*2
+    box_interval = 10*2 + 1
 
     def __init__(self) -> None:
         
         Inventory.inven_player = [ Item_box(i,0) for i in range(5)]
-        Inventory.inven_bag = [ Item_box(i, i/5 + 1) for i in range(15)]
+        Inventory.inven_bag = [ Item_box(i, i//5 + 1) for i in range(15)]
+        for i in range(15):
+            print(Inventory.inven_bag[i].rendering_place)
         if Inventory.back_image == None:
             Inventory.back_image = load_image('sprite\inventory\SpriteAtlasTexture-inventory (Group 2)-1024x1024-fmt25.png')
+        if Inventory.slot_effect_image == None:
+            Inventory.slot_effect_image = load_image("sprite\inventory\Bag_slot_Affected.png")
 
         test_item1 = Item(10001, Item_Id_Name_Table[10001], 10)
         test_item2 = Item(10002, Item_Id_Name_Table[10002], 10)
@@ -50,16 +72,50 @@ class Inventory:
 
     def update(self, deltatime):
         pass
-        
 
     def rendering(self):
+        debug_print(str(Inventory.inven_cursor))
         Inventory.back_image.clip_draw(501, 0, 523, 271, Screen_size[0]/2, Screen_size[1]/2, Inventory.image_rect_size[0]*2, Inventory.image_rect_size[1]*2 )
-        for inven in Inventory.inven_player:
-            inven.rendering()
-        for inven in Inventory.inven_bag:
-            inven.rendering()
+        for i in range(len(Inventory.inven_player)):
+            Inventory.inven_player[i].rendering()
+            if i == Inventory.inven_cursor:
+                x, y = Inventory.inven_player[i].rendering_place
+                x = x % 5
+                correction_place = Inventory.inven_player[i].correction_place
+                x, y = x, y = x*Inventory.box_interval + x*Inventory.box_size + Inventory.Top_place[0], Inventory.Top_place[1] - y*Inventory.box_interval - y*Inventory.box_size - correction_place
+                w, h = Inventory.slot_effect_image.w, Inventory.slot_effect_image.h
+                Inventory.slot_effect_image.draw(x-1, y,w*2,h*2)
+        for i in range(len(Inventory.inven_bag)):
+            Inventory.inven_bag[i].rendering()
+            if i+5 == Inventory.inven_cursor:
+                x, y = Inventory.inven_bag[i].rendering_place
+                x = x % 5
+                correction_place = Inventory.inven_bag[i].correction_place
+                x, y = x, y = x*Inventory.box_interval + x*Inventory.box_size + Inventory.Top_place[0], Inventory.Top_place[1] - y*Inventory.box_interval - y*Inventory.box_size - correction_place
+                w, h = Inventory.slot_effect_image.w, Inventory.slot_effect_image.h
+                Inventory.slot_effect_image.draw(x-1, y,w*2,h*2)
         # Inventory.back_image.draw_to_origin(0,0)
         pass
+
+
+    def handle_event(self, event):
+        if (event.type, event.key) in key_event_table:
+            key_event = key_event_table[(event.type, event.key)]
+            print(key_event)
+            if RIGHT_DOWN == key_event or LEFT_DOWN == key_event or TOP_DOWN == key_event or BOTTOM_DOWN == key_event:
+                self.move_cursor(key_event)
+
+    
+    def move_cursor(self, event):
+        if event == RIGHT_DOWN:
+            Inventory.inven_cursor += 1
+        elif event == LEFT_DOWN:
+            Inventory.inven_cursor -= 1
+        elif event == TOP_DOWN:
+            Inventory.inven_cursor -= 5
+        elif event == BOTTOM_DOWN:
+            Inventory.inven_cursor += 5
+        Inventory.inven_cursor = Inventory.inven_cursor % 20
 
     
     def add_item(item):
@@ -103,6 +159,8 @@ class Inventory:
             if inven.item:
                 print(inven.item.name, inven.count)
 
+    
+
 
 class Item_box:
 
@@ -111,16 +169,18 @@ class Item_box:
         20001: 5
     }
 
+
     def __init__(self, x = -1, y = -1) :
         self.item = None
         self.count = 0
         self.Max_count = None
         self.rendering_place = x, y
         if y > 0:
-            self.correction_place = 20
+            self.correction_place = 15
         else:
             self.correction_place = 0
         self.rect_size = None
+        
 
     def update(self):
         pass
@@ -128,6 +188,7 @@ class Item_box:
     def rendering(self):
         if self.item:
             x, y = self.rendering_place
+            x = x % 5
             x, y = x*Inventory.box_interval + x*Inventory.box_size + Inventory.Top_place[0], Inventory.Top_place[1] - y*Inventory.box_interval - y*Inventory.box_size - self.correction_place
             self.item.rendering(x, y)
             # Font.draw(Font, x, y, str(self.count))

@@ -56,7 +56,10 @@ def handle_events():
             else:
                 game_world.remove_object(Server.inventory)
         else:
-            Player._instance.handle_event(event)
+            if Server.inven_trigger:
+                Server.inventory.handle_event(event)
+            else:
+                Player._instance.handle_event(event)
     pass
 
 
@@ -71,6 +74,8 @@ def update(deltatime):
                 if collider(gate, Player._instance):
                     # print("!!!collsion!!!!")
                     stage.EnterRoom(stage, gate.get_linked_ID())
+    else:
+        Server.inventory.update(deltatime)
 
 
 def draw():
