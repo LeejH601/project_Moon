@@ -29,6 +29,8 @@ def enter():
     _inventory = Inventory()
     Server.inventory = _inventory
     # game_world.add_object(_inventory, 2)
+    font = Font("ENCR10B.TTF")
+    Server.font = font
     
 
 

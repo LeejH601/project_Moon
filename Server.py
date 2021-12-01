@@ -7,4 +7,4 @@ rooms = []
 stage = None
 inventory = None
 inven_trigger = False
-# font = Font('ENCR10B')
+font = False
