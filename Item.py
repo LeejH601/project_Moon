@@ -13,10 +13,11 @@ class Item:
 
     image = None
     
-    def __init__(self, _id, _name, _price = 10):
+    def __init__(self, _id, _name, _price = 10, _value = 0):
         self.item_Id = _id
         self.name = _name
         self.price = _price
+        self.value = _value
         if Item.image == None:
             Item.image = defaultdict()
             for id in Item_Id_Name_Table.keys():

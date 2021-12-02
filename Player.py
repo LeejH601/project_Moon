@@ -1,11 +1,12 @@
 from math import fabs
 from object import *
 from Stage import stage
+from Inventory import Inventory
 
 history = []
 
 RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN, \
-    ATTACK_DOWN, ATTACK_UP, SATTACK_DOWN, SATTACK_UP, INVENTORY_DOWN, INVENTORY_UP, EVASION_TIMER, DEBUG_KEY, ATK_TIMER, SWITCH_TIMER  = range(19)
+    ATTACK_DOWN, ATTACK_UP, SATTACK_DOWN, SATTACK_UP, INVENTORY_DOWN, INVENTORY_UP, EVASION_TIMER, DEBUG_KEY, ATK_TIMER, SWITCH_TIMER, POTION_EAT  = range(20)
 
 
 event_name = ['RIGHT_DOWN', 'LEFT_DOWN', 'RIGHT_UP', 'LEFT_UP', 'SPACE', 'TOP_UP', 'TOP_DOWN', 'BOTTOM_UP', 'BOTTOM_DOWN', \
@@ -26,7 +27,8 @@ key_event_table = {
     (SDL_KEYUP, SDLK_j): ATTACK_UP,
     (SDL_KEYUP, SDLK_k): SATTACK_UP,
     (SDL_KEYDOWN, SDLK_i): INVENTORY_DOWN,
-    (SDL_KEYDOWN, SDLK_0): DEBUG_KEY
+    (SDL_KEYDOWN, SDLK_0): DEBUG_KEY,
+    (SDL_KEYDOWN, SDLK_e): POTION_EAT
 }
 
 RUN_SPEED_KMPH = 15.0
@@ -774,6 +776,7 @@ class Player(Object, Singleton):
         super().__init__(_x, _y, _health, _speed)
         self.set_name('player')
         self.set_atk(25)
+        self.max_health = _health
         IdleState()
         RunState()
         EvasionState()
@@ -797,6 +800,8 @@ class Player(Object, Singleton):
             key_event = key_event_table[(event.type, event.key)]
             if DEBUG_KEY == key_event:
                 print(history[-10:])
+            elif key_event == POTION_EAT:
+                self.Eat_Potion()
             else:
                 self.add_event(key_event)
 
@@ -826,6 +831,13 @@ class Player(Object, Singleton):
     def demaged_by_mob(self, value):
         self.health -= value
         print("으악!  ---  ", self.health)
+
+        
+    def Eat_Potion(self):
+        if Inventory.inven_potion and Inventory.inven_potion.count > 0:
+            self.health += Inventory.inven_potion.item.value
+            self.health = clamp(0, self.health, self.max_health)
+            Inventory.inven_potion.PopItem()
 
     
 

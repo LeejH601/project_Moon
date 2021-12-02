@@ -6,7 +6,7 @@ from Item import *
 from modules import Screen_size
 import Server
 
-RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN, HANDLING_DOWN = range(10)
+RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN, HANDLING_DOWN, HANDLING_UP = range(11)
 
 
 key_event_table = {
@@ -19,20 +19,20 @@ key_event_table = {
     (SDL_KEYUP, SDLK_w): TOP_UP,
     (SDL_KEYUP, SDLK_s): BOTTOM_UP,
     (SDL_KEYDOWN, SDLK_j): HANDLING_DOWN,
+    (SDL_KEYDOWN, SDLK_k): HANDLING_UP,
 }
 
 class Inventory:
-    
+    handing_item = None
 
+    slot_effect_image = None
+    back_image = None
+    
+    inven_cursor = 5
+    
     inven_player = None
     inven_bag = None
-
-    inven_cursor = 5
-
-    handing_item = None
-    slot_effect_image = None
-
-    back_image = None
+    
     image_rect_size = [523, 271]
 
     Top_place = [185, 530]
@@ -41,10 +41,15 @@ class Inventory:
 
     box_interval = 10*2 + 1
 
+    gold = 0
+
+    inven_potion = None
+
     def __init__(self) -> None:
         
         Inventory.inven_player = [ Item_box(i,0) for i in range(5)]
         Inventory.inven_bag = [ Item_box(i, i//5 + 1) for i in range(15)]
+        Inventory.inven_potion = Potion_Box(10, 0)
         for i in range(15):
             print(Inventory.inven_bag[i].rendering_place)
         if Inventory.back_image == None:
@@ -56,7 +61,7 @@ class Inventory:
         test_item2 = Item(10002, Item_Id_Name_Table[10002], 10)
         test_item3 = Item(10003, Item_Id_Name_Table[10003], 10)
         test_item4 = Item(10004, Item_Id_Name_Table[10004], 10)
-        test_item5 = Item(20001, Item_Id_Name_Table[20001], 10)
+        test_item5 = Item(20001, Item_Id_Name_Table[20001], 10, 30)
 
         Inventory.add_item(test_item1)
         Inventory.add_item(test_item2)
@@ -67,17 +72,22 @@ class Inventory:
         Inventory.add_item(test_item3)
         Inventory.add_item(test_item3)
         Inventory.add_item(test_item3)
-        Inventory.add_item(test_item5)
+
+        Inventory.inven_potion.insertItem(test_item5)
         pass
 
 
     def update(self, deltatime):
         if Inventory.handing_item:
             Inventory.handing_item.rendering_place = Inventory.inven_cursor%5, Inventory.inven_cursor//5
+            if Inventory.inven_cursor < 5: Inventory.handing_item.correction_place = 15
+            else: Inventory.handing_item.correction_place = 30
 
     def rendering(self):
         debug_print(str(Inventory.inven_cursor))
         Inventory.back_image.clip_draw(501, 0, 523, 271, Screen_size[0]/2, Screen_size[1]/2, Inventory.image_rect_size[0]*2, Inventory.image_rect_size[1]*2 )
+        Inventory.inven_potion.rendering()
+        print(Inventory.inven_potion.rendering_place)
         for i in range(len(Inventory.inven_player)):
             Inventory.inven_player[i].rendering()
             if i == Inventory.inven_cursor:
@@ -110,6 +120,8 @@ class Inventory:
                 self.move_cursor(key_event)
             elif key_event == HANDLING_DOWN:
                 Inventory.on_handing_of_item()
+            elif key_event == HANDLING_UP:
+                Inventory.down_handing_item()
 
     
     def move_cursor(self, event):
@@ -132,26 +144,41 @@ class Inventory:
 
     def on_handing_of_item():
         if Inventory.handing_item == None:
-            Inventory.handing_item = Item_box(Inventory.inven_cursor//5, Inventory.inven_cursor%5)
+            Inventory.handing_item = Item_box(Inventory.inven_cursor%5, Inventory.inven_cursor//5)
             Inventory.handing_item.insertItem(Inventory.Popitem_by_cursor())
         else:
-            Inventory.handing_item.insertItem(Inventory.Popitem_by_cursor(Inventory.handing_item.item.item_Id))
+            if Inventory.handing_item.count < Inventory.handing_item.Max_count:
+                Inventory.handing_item.insertItem(Inventory.Popitem_by_cursor(Inventory.handing_item.item.item_Id))
+
+
+    def down_handing_item():
+        if Inventory.handing_item:
+            if Inventory.inven_cursor < 5:
+                Inventory.inven_player[Inventory.inven_cursor].insertItem(Inventory.handing_item.PopItem())
+            else:
+                Inventory.inven_bag[Inventory.inven_cursor - 5].insertItem(Inventory.handing_item.PopItem())
+            if Inventory.handing_item.count <= 0:
+                Inventory.handing_item = None
             
 
     
     def Popitem_by_cursor(item_id = None):
         if item_id == None:
             if Inventory.inven_cursor < 5:
-                return Inventory.inven_player[Inventory.inven_cursor].PopItem()
-            else:
-                return Inventory.inven_bag[Inventory.inven_cursor - 5].PopItem()
-        else:
-            if Inventory.inven_cursor < 5:
-                if Inventory.inven_player[Inventory.inven_cursor].item.item_Id == item_id:
+                if Inventory.inven_player[Inventory.inven_cursor].item:
                     return Inventory.inven_player[Inventory.inven_cursor].PopItem()
             else:
-                if Inventory.inven_bag[Inventory.inven_cursor].item.item_Id == item_id:
+                if Inventory.inven_bag[Inventory.inven_cursor - 5].item:
                     return Inventory.inven_bag[Inventory.inven_cursor - 5].PopItem()
+        else:
+            if Inventory.inven_cursor < 5:
+                if Inventory.inven_player[Inventory.inven_cursor].item:
+                    if Inventory.inven_player[Inventory.inven_cursor].item.item_Id == item_id:
+                        return Inventory.inven_player[Inventory.inven_cursor].PopItem()
+            else:
+                if Inventory.inven_bag[Inventory.inven_cursor - 5].item:
+                    if Inventory.inven_bag[Inventory.inven_cursor - 5].item.item_Id == item_id:
+                        return Inventory.inven_bag[Inventory.inven_cursor - 5].PopItem()
             return None
 
 
@@ -176,7 +203,7 @@ class Inventory:
             if inven.item:
                 print(inven.item.name, inven.count)
 
-    
+  
 
 
 class Item_box:
@@ -218,18 +245,18 @@ class Item_box:
         return False
 
     def insertItem(self, item):
-        
-        if self.Max_count == None:
-            self.Max_count = Item_box.item_max_count_table[item.item_Id]
-        if self.item == None:
-            self.count += 1
-            self.item = item
-            return True
-        else:
-            if self.item.item_Id == item.item_Id:
-                if self.count < self.Max_count:
-                    self.count += 1
-                    return True
+        if item:
+            if self.Max_count == None:
+                self.Max_count = Item_box.item_max_count_table[item.item_Id]
+            if self.item == None:
+                self.count += 1
+                self.item = item
+                return True
+            else:
+                if self.item.item_Id == item.item_Id:
+                    if self.count < self.Max_count:
+                        self.count += 1
+                        return True
 
         return False
 
@@ -260,6 +287,21 @@ class Item_box:
         
         return False
         
+
+class Potion_Box(Item_box):
+
+    def __init__(self, x=-1, y=-1):
+        super().__init__(x=Screen_size[0]/2 + 65*2, y=Screen_size[1]/2 + 85*2)
+
+    def rendering(self):
+        if self.item:
+            x, y = self.rendering_place
+            
+            self.item.rendering(x, y)
+            Server.font.draw(x+12,y-15,str(self.count))
+            # Font.draw(Font, x, y, str(self.count))
+    
+
         
 
 if __name__ == '__main__':
