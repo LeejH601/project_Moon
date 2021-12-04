@@ -6,8 +6,9 @@ image = None
 
 
 def enter():
-    global image
+    global image, logoimage
     image = load_image('title.png')
+    logoimage = load_image('GameLogo.png')
 
 
 def exit():
@@ -29,7 +30,9 @@ def handle_events():
 
 def draw():
     clear_canvas()
-    image.draw(400,300)
+    draw_size = Screen_size[0]/image.w, Screen_size[1]/image.h
+    image.draw(Screen_size[0]/2,Screen_size[1]/2, draw_size[0]*image.w, draw_size[1]*image.h)
+    logoimage.draw(Screen_size[0]/4,Screen_size[1]/2, logoimage.w*2, logoimage.h*2)
     update_canvas()
 
 
@@ -38,7 +41,7 @@ def draw():
 
 
 
-def update():
+def update(deletatime):
     pass
 
 

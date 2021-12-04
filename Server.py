@@ -8,3 +8,4 @@ stage = None
 inventory = None
 inven_trigger = False
 font = False
+fieldItem = []

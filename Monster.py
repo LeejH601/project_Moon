@@ -1,15 +1,23 @@
 from math import degrees, dist, sqrt
 from random import sample
+from Item import Item
 from object import *
 from BehaviorTree import LeafNode, SelectorNode, SequenceNode, BehaviorTree
 import Server
+from modules import item_price_table
+from Item import Item_Id_Name_Table
+
+drap_table = {
+    0 : [10001],
+    1 : [10002, 10003, 10004]
+}
 
 
 class Monster(Object):
 
     
     
-    def __init__(self, _x, _y, _health, _speed, _direct=[0, -1]):
+    def __init__(self, _x, _y, _health, _speed, d_table, _direct=[0, -1], ):
         super().__init__(_x, _y, _health, _speed, _direct=_direct)
         # self.Set_Speed(_speed)
         self.cur_images = None
@@ -29,6 +37,7 @@ class Monster(Object):
         self.is_stiffness = True
         self.Attack_Frame = 0
         self.now_offensing = False
+        self.drap_table = d_table
 
     def Set_Speed(self, _speed = 1):
         RUN_SPEED_KMPH = _speed
@@ -125,6 +134,14 @@ class Monster(Object):
         
 
     def dead(self):
+        if self.is_dead == False:
+            drap_count = random.randint(1, len(self.drap_table))
+            for i in range(drap_count):
+                drap_index = random.randint(0, len(self.drap_table) - 1)
+                drap_item_code = self.drap_table[drap_index]
+                item = Item(drap_item_code, Item_Id_Name_Table[drap_item_code], item_price_table[drap_item_code], 0, self.locate[0], self.locate[1])
+                game_world.add_object(item, 1)
+                Server.fieldItem.append(item)
         self.is_dead = True
         return BehaviorTree.SUCCESS
         pass
@@ -210,7 +227,7 @@ class SmallSlime(Monster):
 
 
     def __init__(self, _x, _y, _health, _speed, _direct=[0, -1]):
-        super().__init__(_x, _y, _health, _speed, _direct=_direct)
+        super().__init__(_x, _y, _health, _speed, drap_table[0], _direct=_direct)
         if SmallSlime.image_idle == None:
             SmallSlime.image_idle = defaultdict(list)
             SmallSlime.image_idle[-1].append(load_image('sprite\monster\Babyslime_idle.png'))
@@ -366,7 +383,7 @@ class GollemKnight(Monster):
 
 
     def __init__(self, _x, _y, _health, _speed, _direct=[0, -1]):
-        super().__init__(_x, _y, _health, _speed, _direct=_direct)
+        super().__init__(_x, _y, _health, _speed,  drap_table[1], _direct=_direct)
         if GollemKnight.image_idle == None:
             GollemKnight.image_idle = defaultdict(list)
             for i in range(0+1, 9):
@@ -529,7 +546,7 @@ class BigSlime(Monster):
 
 
     def __init__(self, _x, _y, _health, _speed, _direct=[0, -1]):
-        super().__init__(_x, _y, _health, _speed, _direct=_direct)
+        super().__init__(_x, _y, _health, _speed,  drap_table[0], _direct=_direct)
         if BigSlime.image_idle == None:
             BigSlime.image_idle = defaultdict(list)
             BigSlime.image_idle[-1].append(load_image('sprite\monster\slime_walk_1.png'))
@@ -695,7 +712,7 @@ class GolemBoss(Monster):
 
 
     def __init__(self, _x, _y, _health, _speed, _direct=[0, -1]):
-        super().__init__(_x, _y, _health, _speed, _direct=_direct)
+        super().__init__(_x, _y, _health, _speed,  drap_table[1], _direct=_direct)
         if GolemBoss.image_idle == None:
             GolemBoss.image_idle = defaultdict(list)
             for i in range(0+1, 9):

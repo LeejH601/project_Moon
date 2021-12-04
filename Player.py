@@ -2,6 +2,7 @@ from math import fabs
 from object import *
 from Stage import stage
 from Inventory import Inventory
+from Server import fieldItem
 
 history = []
 
@@ -823,6 +824,7 @@ class Player(Object, Singleton):
                         print('State : ' + self.cur_state.__name__ + 'Event: ' + event_name[event])
                         exit(-1)
                 self.cur_state.enter(self, event)
+        self.Check_item_collison()
 
     def add_event(self, event):
         self.event_que.insert(0, event)
@@ -839,6 +841,23 @@ class Player(Object, Singleton):
             self.health = clamp(0, self.health, self.max_health)
             Inventory.inven_potion.PopItem()
 
+    def Check_item_collison(self):
+        for item in fieldItem:
+            if item.timer <= 0 and self.collider(self.get_rect(), item):
+                Inventory.add_item(item)
+                game_world.remove_object(item)
+                fieldItem.remove(item)
+                
+
+    def collider(self, my_rect, b):
+        left_a, bottom_a, right_a, top_a = my_rect
+        left_b, bottom_b, right_b, top_b = b.get_rect()
+
+        if left_a > right_b: return False
+        if right_a < left_b: return False
+        if top_a < bottom_b: return False
+        if bottom_a > top_b: return False
     
+        return True
 
     pass

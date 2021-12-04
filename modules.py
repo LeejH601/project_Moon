@@ -13,5 +13,8 @@ directs = {'up':0,'right':1,'down':2,'left':3}
 Screen_size = x, y = 1160, 728
 s_size = 2
 
-
+item_price_table = {
+    10001: 10, 10002: 100, 10003: 50, 10004: 150,\
+        20001: 50,
+}
 

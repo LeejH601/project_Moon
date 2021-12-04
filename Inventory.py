@@ -50,8 +50,6 @@ class Inventory:
         Inventory.inven_player = [ Item_box(i,0) for i in range(5)]
         Inventory.inven_bag = [ Item_box(i, i//5 + 1) for i in range(15)]
         Inventory.inven_potion = Potion_Box(10, 0)
-        for i in range(15):
-            print(Inventory.inven_bag[i].rendering_place)
         if Inventory.back_image == None:
             Inventory.back_image = load_image('sprite\inventory\SpriteAtlasTexture-inventory (Group 2)-1024x1024-fmt25.png')
         if Inventory.slot_effect_image == None:
@@ -87,7 +85,6 @@ class Inventory:
         debug_print(str(Inventory.inven_cursor))
         Inventory.back_image.clip_draw(501, 0, 523, 271, Screen_size[0]/2, Screen_size[1]/2, Inventory.image_rect_size[0]*2, Inventory.image_rect_size[1]*2 )
         Inventory.inven_potion.rendering()
-        print(Inventory.inven_potion.rendering_place)
         for i in range(len(Inventory.inven_player)):
             Inventory.inven_player[i].rendering()
             if i == Inventory.inven_cursor:
@@ -115,7 +112,6 @@ class Inventory:
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
-            print(key_event)
             if RIGHT_DOWN == key_event or LEFT_DOWN == key_event or TOP_DOWN == key_event or BOTTOM_DOWN == key_event:
                 self.move_cursor(key_event)
             elif key_event == HANDLING_DOWN:
