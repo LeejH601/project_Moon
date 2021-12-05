@@ -11,7 +11,7 @@ import title_state
 
 
 
-name = "MainState"
+name = "HomeState"
 
 
 font = None
@@ -36,11 +36,10 @@ def enter():
     if Server.font == None:
         font = Font("ENCR10B.TTF")
         Server.font = font
-    stage.in_to_dungeon()   
+
 
 
 def exit():
-    Server.stage.ClearRoom()
     game_world.clear()
 
 
@@ -75,13 +74,6 @@ def update(deltatime):
     if not Server.inven_trigger:
         for game_object in game_world.all_objects():
             game_object.update(deltatime)
-
-        if stage.place_trigger == 1:
-            gates = stage.cur_room.get_gateList()
-            for gate in gates:
-                if collider(gate, Player._instance):
-                    # print("!!!collsion!!!!")
-                    stage.EnterRoom(stage, gate.get_linked_ID())
     else:
         Server.inventory.update(deltatime)
 

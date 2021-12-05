@@ -7,5 +7,5 @@ rooms = []
 stage = None
 inventory = None
 inven_trigger = False
-font = False
+font = None
 fieldItem = []

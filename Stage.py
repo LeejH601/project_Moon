@@ -3,6 +3,7 @@ from Monster import *
 from modules import *
 from object import Object
 import Server
+from background import FixedBackground as background
 
 class stage(Object):
     background_image = None
@@ -10,6 +11,7 @@ class stage(Object):
     room_indexs = {}
     home = None
     home_image = None
+    back_field_image = None
 
     cur_room = None
 
@@ -17,10 +19,13 @@ class stage(Object):
 
     def __init__(self):
         if stage.background_image == None:
-            stage.background_image = load_image('sprite\stage\Background.png')
+            image = load_image('sprite\stage\Background.png')
+            stage.background_image = background(image, Screen_size[0]+10, Screen_size[1]+10)
         if stage.home_image == None: 
-            stage.home_image = load_image('sprite\shop\shop_new_version_lv1_background_ok.png')
-        game_world.add_object(self, 0)
+            image = load_image('sprite\shop\shop_new_version_lv1_background_ok.png')
+            stage.home_image = background(image, image.w*s_size, image.h*s_size)
+        if stage.back_field_image == None:
+            stage.back_field_image = load_image('sprite\shop\Backimage.png')
         stage.place_trigger = 0
         stage.home = Room(100,stage.home_image,0)
         stage.set_name(self, 'stage')
@@ -86,6 +91,9 @@ class stage(Object):
                     stage.rooms[i].add_gate(t_id)
             pass
 
+    
+    def ClearRoom(self):
+        stage.rooms.clear()
 
     def EnterRoom(self, dir_ID):
         game_world.get_player_instacne().locate = [Screen_size[0]/2, Screen_size[1]/2]
@@ -108,6 +116,7 @@ class stage(Object):
             stage.home.update(deltatime)
 
     def rendering(self):
+        stage.back_field_image.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
         if stage.place_trigger == 1:
             stage.cur_room.rendering()
         else:
@@ -211,15 +220,16 @@ class Room(Object):
         return self.room_Id
 
     def update(self, deltatime):
+        self.image.update(deltatime)
         return super().update(deltatime)
 
     def rendering(self):
         if self.flag == 1:
-            self.image.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
+            self.image.draw()
             self.bk_shadow.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
             self.bk_light.draw_to_origin(-5,-5,Screen_size[0]+10, Screen_size[1]+10)
         else:
-            self.image.draw_to_origin(0,0, self.image.w*s_size, self.image.h*s_size)
+            self.image.draw()
         for gate in self.gates:
             gate.rendering()
         pass

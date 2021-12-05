@@ -1,5 +1,5 @@
 from modules import *
-import main_state
+import home_state
 
 name = "TitleState"
 image = None
@@ -25,7 +25,7 @@ def handle_events():
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_ESCAPE):
                 game_framework.quit()
             elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_SPACE):
-                game_framework.change_state(main_state)
+                game_framework.change_state(home_state)
 
 
 def draw():
