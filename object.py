@@ -44,6 +44,10 @@ class Object:
     def get_direct(self):
         return self.direct
 
+    def set_locate(self, x, y):
+        self.locate[0] = x
+        self.locate[1] = y
+
     def get_locate(self):
         return self.locate
 
@@ -57,8 +61,8 @@ class Object:
         self.health -= demage
 
     def myclamp(self):
-        self.locate[0] = clamp(0, self.locate[0], Screen_size[0] - 40)
-        self.locate[1] = clamp(0, self.locate[1], Screen_size[1] - 40)
+        self.locate[0] = clamp(90, self.locate[0], Screen_size[0] - 140)
+        self.locate[1] = clamp(90, self.locate[1], Screen_size[1] - 140)
         return self.locate
 
     def Set_rectSize(self, w, h):

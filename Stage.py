@@ -20,9 +20,9 @@ class stage(Object):
     def __init__(self):
         if stage.background_image == None:
             image = load_image('sprite\stage\Background.png')
-            stage.background_image = background(image, Screen_size[0]+10, Screen_size[1]+10)
+            stage.background_image = background(image, Screen_size[0], Screen_size[1])
         if stage.home_image == None: 
-            image = load_image('sprite\shop\shop_new_version_lv1_background_ok.png')
+            image = load_image('sprite\shop\shop_new version background_lv3.png')
             stage.home_image = background(image, image.w*s_size, image.h*s_size)
         if stage.back_field_image == None:
             stage.back_field_image = load_image('sprite\shop\Backimage.png')
@@ -153,6 +153,10 @@ class Room(Object):
         self.bk_shadow = Room.dungeon_shadow[randint(0, 5)]
         self.gates = []
         self.flag = flag
+        if flag == 0:
+            gate = Gate(35, 0)
+            gate.image = None
+            self.gates.append(gate)
         if flag == 1:
             room_pattern = randint(0,2)
             # room_pattern = 2
@@ -261,6 +265,8 @@ class Gate(Object):
         elif self.direct == [1, 0]: # 90
             self.locate = [Screen_size[0] - self.image[0].h, Screen_size[1] / 2]
             self.rad = -math.pi/2
+        else:
+            self.locate = [Screen_size[0] / 2 , self.image[0].h + 40]
         self.set_name('gate')
 
         pass
@@ -279,10 +285,13 @@ class Gate(Object):
 
     def rendering(self):
         # print(self.locate)
-        self.image[0].rotate_draw(self.rad ,*self.locate,Gate.image[0].w*s_size/2, Gate.image[0].h*s_size/2)
+        if self.image:
+            self.image[0].rotate_draw(self.rad ,*self.locate,Gate.image[0].w*s_size/1.3, Gate.image[0].h*s_size/1.3)
+        _rect = self.get_rect()
+        draw_rectangle(*_rect)
 
     def get_rect(self):
-        return self.locate[0] - 20, self.locate[1] - 20, self.locate[0] + 20, self.locate[1] + 20
+        return self.locate[0] - 40, self.locate[1] - 40, self.locate[0] + 40, self.locate[1] + 40
     
     pass
 

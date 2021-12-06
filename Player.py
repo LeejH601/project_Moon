@@ -847,6 +847,14 @@ class Player(Object, Singleton):
                 Inventory.add_item(item)
                 game_world.remove_object(item)
                 fieldItem.remove(item)
+
+    
+    def myclamp(self):
+        if stage.place_trigger == 1:
+            return super().myclamp()
+        x = clamp(150, self.locate[0], Screen_size[0] - 200)
+        y = clamp(120, self.locate[1], Screen_size[1] - 250)
+        return [x, y]
                 
 
     def collider(self, my_rect, b):

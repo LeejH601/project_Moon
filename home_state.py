@@ -7,7 +7,7 @@ from Stage import stage
 
 from modules import *
 import Server
-import title_state
+import main_state
 
 
 
@@ -74,6 +74,13 @@ def update(deltatime):
     if not Server.inven_trigger:
         for game_object in game_world.all_objects():
             game_object.update(deltatime)
+        
+        if stage.place_trigger == 0:
+            gates = stage.home.get_gateList()
+            for gate in gates:
+                if collider(gate, Player._instance):
+                    # print("!!!collsion!!!!")
+                    game_framework.change_state(main_state)
     else:
         Server.inventory.update(deltatime)
 

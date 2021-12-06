@@ -59,6 +59,7 @@ class Monster(Object):
         self.frame = (self.frame + self.Actions.FRAMES_PER_ACTION *self.Actions.ACTION_PER_TIME * deltatime) % self.Actions.FRAMES_PER_ACTION
         self.locate[0] += self.RUN_SPEED_PPS * math.cos(self.vector) * deltatime
         self.locate[1] += self.RUN_SPEED_PPS * math.sin(self.vector) * deltatime
+        self.myclamp()
 
 
     def rendering(self):
@@ -156,6 +157,7 @@ class Monster(Object):
                 dl = [Server.player.direct[0]*(self.rect_size[0]/2), Server.player.direct[1]*(self.rect_size[1]/2)]
                 self.locate[0] +=  dl[0]
                 self.locate[1] +=  dl[1]
+                self.myclamp()
                 self.Timer_Hit = self.Actions.TIME_PER_ACTION
                 return BehaviorTree.SUCCESS
         return BehaviorTree.FAIL

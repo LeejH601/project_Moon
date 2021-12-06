@@ -48,26 +48,30 @@ class FixedBackground:
 
     def __init__(self, image, w = None, h = None):
         self.image = image
-        self.canvas_width = Screen_size[0]
-        self.canvas_height = Screen_size[1]
+        self.canvas_width = get_canvas_width()
+        self.canvas_height = get_canvas_height()
+        print('canvas: ', self.canvas_width, self.canvas_height)
         if w: self.w = w
         else: self.w = self.image.w
         if h: self.h = h
         else: self.h = self.image.h
-        self.window_left = clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width)
-        self.window_bottom = clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height)
+        # self.window_left = clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width)
+        # self.window_bottom = clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height)
+        self.window_left = 0
+        self.window_bottom = 0
         print(self.w, self.h, self.canvas_width, self.canvas_height)
 
 
     def draw(self):
-        self.image.clip_draw_to_origin(self.window_left, self.window_bottom, self.canvas_width, self.canvas_height, -5, -5, self.w, self.h)
+        self.image.clip_draw_to_origin(self.window_left, self.window_bottom, int(self.canvas_width/2), int(self.canvas_height/2), 0, 0, self.canvas_width, self.canvas_height)
         # print('windows: ', self.window_left, self.window_bottom, self.w, self.h, self.canvas_width, self.canvas_height)
         pass
 
     def update(self, deltatime):
-        print('x : ', int(Server.player.locate[0]) - self.canvas_width // 2, 'y : ', int(Server.player.locate[1]) - self.canvas_height // 2)
-        self.window_left = clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width)
-        self.window_bottom = clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height)
+        # print('x : ', int(Server.player.locate[0]) - self.canvas_width // 2, 'y : ', int(Server.player.locate[1]) - self.canvas_height // 2)
+        print('x: ', clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width), 'y: ', clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height))
+        # self.window_left = clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width)
+        # self.window_bottom = clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height)
         pass
 
     def handle_event(self, event):
