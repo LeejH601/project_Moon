@@ -47,6 +47,8 @@ class Monster(Object):
         self.atk_soundflag = True
         self.idle_soundflag = True
 
+        self.hit_able = True
+
     def Set_Speed(self, _speed = 1):
         RUN_SPEED_KMPH = _speed
         RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
@@ -167,7 +169,9 @@ class Monster(Object):
     def check_Hit(self):
         if Server.player.bounding_box:
             if self.collider(self.get_rect(), Server.player):
-                self.health -= Server.player.Atk
+                if self.hit_able:
+                    self.health -= Server.player.Atk
+                    self.hit_able = False
                 print('mobhealth: ', self.health)
                 if not self.is_stiffness :
                     return BehaviorTree.FAIL
@@ -189,6 +193,7 @@ class Monster(Object):
         self.RUN_SPEED_PPS = 0.0
         if self.Timer_Hit <= 0.0:
             self.hit_soundflag = True
+            self.hit_able = True
             return BehaviorTree.SUCCESS
         self.Timer_Hit -= self.m_deltatime
         return BehaviorTree.RUNNING
@@ -836,6 +841,8 @@ class GolemBoss(Monster):
         
 
     def update(self, deltatime):
+        debug_print(self.health)
+        print(self.health)
         return super().update(deltatime)
 
     def rendering(self):

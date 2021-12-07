@@ -50,7 +50,7 @@ class FixedBackground:
         self.image = image
         self.canvas_width = get_canvas_width()
         self.canvas_height = get_canvas_height()
-        print('canvas: ', self.canvas_width, self.canvas_height)
+        # print('canvas: ', self.canvas_width, self.canvas_height)
         if w: self.w = w
         else: self.w = self.image.w
         if h: self.h = h
@@ -69,7 +69,7 @@ class FixedBackground:
 
     def update(self, deltatime):
         # print('x : ', int(Server.player.locate[0]) - self.canvas_width // 2, 'y : ', int(Server.player.locate[1]) - self.canvas_height // 2)
-        print('x: ', clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width), 'y: ', clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height))
+        # print('x: ', clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width), 'y: ', clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height))
         # self.window_left = clamp(0, int(Server.player.locate[0]) - self.canvas_width // 2, self.w - self.canvas_width)
         # self.window_bottom = clamp(0, int(Server.player.locate[1]) - self.canvas_height // 2, self.h - self.canvas_height)
         pass

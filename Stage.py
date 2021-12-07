@@ -101,7 +101,13 @@ class stage(Object):
         stage.rooms.clear()
 
     def EnterRoom(self, dir_ID):
-        game_world.get_player_instacne().locate = [Screen_size[0]/2, Screen_size[1]/2]
+        # game_world.get_player_instacne().locate = [Screen_size[0]/2, Screen_size[1]/2]
+        # print(Server.player.locate)
+        # Server.player.locate = [abs(((Server.player.locate[0])/Screen_size[0])-1)*Screen_size[0],
+        #                         abs(((Server.player.locate[1])/Screen_size[1])-1)*Screen_size[1]
+        # ]
+        # print(Server.player.locate)
+        # Server.player.locate = Server.player.myclamp()
         gates = self.cur_room.get_gateList()
         now_ID = self.cur_room.get_ID()
         new_ID = dir_ID
@@ -110,6 +116,15 @@ class stage(Object):
                 self.cur_room.room_out()
                 self.cur_room = self.rooms[self.room_indexs[new_ID]]
                 self.cur_room.room_in()
+                _dir = new_ID - gate.my_id
+                if _dir == 10:
+                    Server.player.locate = [Screen_size[0] - 150, Screen_size[1] / 2]
+                elif _dir == -10:
+                    Server.player.locate = [150, Screen_size[1] / 2]
+                elif _dir == 1:
+                    Server.player.locate = [Screen_size[0] / 2, Screen_size[1] - 150]
+                elif _dir == -1:
+                    Server.player.locate = [Screen_size[0] / 2 , 150]
                 pass
         self.show_rooms_info(self)
         pass

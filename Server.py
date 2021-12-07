@@ -9,3 +9,4 @@ inventory = None
 inven_trigger = False
 font = None
 fieldItem = []
+ui = None

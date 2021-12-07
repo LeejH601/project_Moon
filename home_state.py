@@ -4,6 +4,7 @@ import os
 from Inventory import Inventory
 from Player import Player
 from Stage import stage
+import interface
 
 from modules import *
 import Server
@@ -36,6 +37,10 @@ def enter():
     if Server.font == None:
         font = Font("ENCR10B.TTF")
         Server.font = font
+    if Server.ui == None:
+        Ui = interface.Interface()
+        Server.ui = Ui
+    game_world.add_object(Server.ui, 2)
 
 
 

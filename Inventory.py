@@ -40,7 +40,7 @@ class Inventory:
 
     box_interval = 10*2 + 1
 
-    gold = 0
+    gold = 1000
 
     inven_potion = None
 
