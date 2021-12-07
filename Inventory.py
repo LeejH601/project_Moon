@@ -1,7 +1,6 @@
 import pico2d
 from pico2d.pico2d import Font, debug_print
-from pico2d.sdl2.events import *
-from pico2d.sdl2.keycode import *
+from pico2d import *
 from Item import *
 from modules import Screen_size
 import Server

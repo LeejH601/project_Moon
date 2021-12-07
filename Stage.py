@@ -17,6 +17,8 @@ class stage(Object):
 
     place_trigger = 0
 
+    bk_sound = None
+
     def __init__(self):
         if stage.background_image == None:
             image = load_image('sprite\stage\Background.png')
@@ -32,6 +34,8 @@ class stage(Object):
         # stage.MakeRooms(1)
         # self.cur_room.room_in()
         # game_world.add_objects(self.cur_room.get_gateList(), 0)
+        stage.bk_sound = load_music('sound\golem_dungeon_floor.wav')
+        stage.bk_sound.set_volume(30)
         pass
 
     def get_name(self):
@@ -41,6 +45,7 @@ class stage(Object):
         stage.MakeRooms(1)
         stage.place_trigger = 1
         stage.cur_room.room_in()
+        stage.bk_sound.repeat_play()
 
     def show_rooms_info(self):
         print('now_room: ', self.cur_room.get_ID())

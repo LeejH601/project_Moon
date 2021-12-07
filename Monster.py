@@ -39,6 +39,14 @@ class Monster(Object):
         self.now_offensing = False
         self.drap_table = d_table
 
+        self.hit_sound = None
+        self.atk_sound = None
+        self.idle_sound = None
+
+        self.hit_soundflag = True
+        self.atk_soundflag = True
+        self.idle_soundflag = True
+
     def Set_Speed(self, _speed = 1):
         RUN_SPEED_KMPH = _speed
         RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
@@ -86,8 +94,17 @@ class Monster(Object):
     
         return True
 
+    def set_hitsound(self, sound):
+        self.hit_sound = sound
+    
+    def set_atksound(self, sound):
+        self.atk_sound = sound
 
     def Find_Player(self):
+        if self.atk_soundflag and self.hit_soundflag and self.idle_soundflag:
+            if self.idle_sound:
+                self.idle_sound.play()
+            self.idle_soundflag = False
         if self.is_dead : return BehaviorTree.FAIL
         distance = (Server.player.locate[0] - self.locate[0])**2 + (Server.player.locate[1] - self.locate[1])**2
         if distance < (PIXEL_PER_METER * 10)**2:
@@ -159,6 +176,11 @@ class Monster(Object):
                 self.locate[1] +=  dl[1]
                 self.myclamp()
                 self.Timer_Hit = self.Actions.TIME_PER_ACTION
+                if self.hit_soundflag:
+                    if self.hit_sound:
+                        self.hit_sound.play()
+                    self.hit_soundflag = False
+                    self.idle_soundflag = True
                 return BehaviorTree.SUCCESS
         return BehaviorTree.FAIL
         
@@ -166,11 +188,17 @@ class Monster(Object):
     def Hit(self):
         self.RUN_SPEED_PPS = 0.0
         if self.Timer_Hit <= 0.0:
+            self.hit_soundflag = True
             return BehaviorTree.SUCCESS
         self.Timer_Hit -= self.m_deltatime
         return BehaviorTree.RUNNING
 
     def Attack_to_Player(self):
+        if self.atk_soundflag:
+            if self.atk_sound:
+                self.atk_sound.play()
+            self.atk_soundflag = False
+            self.idle_soundflag = True
         self.RUN_SPEED_PPS = 0.0
         self.is_stiffness = False
         if self.collider(self.bounding_box, Server.player) and not self.is_myAtkHit and self.Attack_Frame <= int(self.frame):
@@ -181,6 +209,7 @@ class Monster(Object):
             self.bounding_box = None
             self.is_stiffness = True
             self.now_offensing = False
+            self.atk_soundflag = True
             return BehaviorTree.SUCCESS
         else:
             self.Timer_Attack -= self.m_deltatime
@@ -201,6 +230,9 @@ class SmallSlime(Monster):
     image_move = None
     image_hit = None
     image_dead = None
+
+    hit_sound = None
+    atk_sound = None
 
     class IdleAction:
         TIME_PER_ACTION = 1.0
@@ -266,6 +298,14 @@ class SmallSlime(Monster):
             SmallSlime.image_dead[1].append(load_image('sprite\monster\deadenemy_slimes.png'))
             SmallSlime.image_dead[-10].append(load_image('sprite\monster\deadenemy_slimes.png'))
             SmallSlime.image_dead[10].append(load_image('sprite\monster\deadenemy_slimes.png'))
+
+        SmallSlime.hit_sound = load_wav('sound\golem_dungeon_slime_hit.wav')
+        SmallSlime.atk_sound = load_wav('sound\golem_dungeon_slime_attack.wav')
+        SmallSlime.hit_sound.set_volume(32)
+        SmallSlime.atk_sound.set_volume(32)
+        
+        self.set_hitsound(SmallSlime.hit_sound)
+        self.set_atksound(SmallSlime.atk_sound)
 
         self.Atk = 5
         self.Set_rectSize(self.image_idle[-1][0].w*s_size, self.image_idle[-1][0].h*s_size)
@@ -358,6 +398,9 @@ class GollemKnight(Monster):
     image_hit = None
     image_dead = None
 
+    hit_sound = None
+    atk_sound = None
+
     class IdleAction:
         TIME_PER_ACTION = 1.5
         ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
@@ -429,6 +472,13 @@ class GollemKnight(Monster):
                 GollemKnight.image_dead[-10].append(load_image('sprite\monster\Enemies_StoneSoldier_Floating_Left_'+str(i)+'.png'))
                 GollemKnight.image_dead[10].append(load_image('sprite\monster\Enemies_StoneSoldier_Floating_Right_'+str(i)+'.png'))
 
+        GollemKnight.hit_sound = load_wav('sound\golem_dungeon_golem_crash.wav')
+        # GollemKnight.atk_sound = load_wav('sound\golem_dungeon_slime_attack.wav')
+        GollemKnight.hit_sound.set_volume(32)
+        # GollemKnight.atk_sound.set_volume(32)
+        
+        self.set_hitsound(GollemKnight.hit_sound)
+        # self.set_atksound(GollemKnight.atk_sound)
 
         self.Atk = 5
         self.Set_rectSize(self.image_idle[-1][0].w*s_size, self.image_idle[-1][0].h*s_size)
@@ -521,6 +571,9 @@ class BigSlime(Monster):
     image_hit = None
     image_dead = None
 
+    hit_sound = None
+    atk_sound = None
+
     class IdleAction:
         TIME_PER_ACTION = 1.0
         ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
@@ -589,6 +642,14 @@ class BigSlime(Monster):
             BigSlime.image_dead[1].append(load_image('sprite\monster\deadenemy_slimes.png'))
             BigSlime.image_dead[-10].append(load_image('sprite\monster\deadenemy_slimes.png'))
             BigSlime.image_dead[10].append(load_image('sprite\monster\deadenemy_slimes.png'))
+
+        BigSlime.hit_sound = load_wav('sound\\bigslime_hit.wav')
+        BigSlime.atk_sound = load_wav('sound\\bigslime_split.wav')
+        BigSlime.hit_sound.set_volume(32)
+        BigSlime.atk_sound.set_volume(32)
+        
+        self.set_hitsound(BigSlime.hit_sound)
+        self.set_atksound(BigSlime.atk_sound)
 
         self.Atk = 5
         self.Set_rectSize(self.image_idle[-1][0].w*s_size, self.image_idle[-1][0].h*s_size)
@@ -682,6 +743,9 @@ class GolemBoss(Monster):
     image_dead = None
     image_smash = None
 
+    hit_sound = None
+    atk_sound = None
+
     class IdleAction:
         TIME_PER_ACTION = 1.5
         ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
@@ -752,6 +816,16 @@ class GolemBoss(Monster):
 
         if GolemBoss.image_dead == None:
             GolemBoss.image_dead = GolemBoss.image_idle
+
+        GolemBoss.hit_sound = load_wav('sound\golem_dungeon_golem_crash.wav')
+        GolemBoss.atk_sound = load_wav('sound\Miniboss_golemwarrior_sword.wav')
+        GolemBoss.idle_sound = load_wav('sound\Miniboss_golemwarrior_idle_corrupted.wav')
+        GolemBoss.hit_sound.set_volume(32)
+        GolemBoss.atk_sound.set_volume(32)
+        GolemBoss.idle_sound.set_volume(32)
+
+        self.set_hitsound(GolemBoss.hit_sound)
+        self.set_atksound(GolemBoss.atk_sound)
 
         self.vector = 0
         self.Atk = 5

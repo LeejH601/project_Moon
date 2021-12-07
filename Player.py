@@ -90,6 +90,8 @@ class RunState:
     ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
     FRAMES_PER_ACTION = 8
 
+    sound_timer = 0.0
+
     image = None
 
     key_able = [False, False, False, False]
@@ -105,6 +107,8 @@ class RunState:
                 RunState.image[0] = RunState.image[-1]
 
     def enter(player, event):
+        # if not True in RunState.key_able:
+        #     player.run_sound.repeat_play()
         player.frame = 0
         if event == RIGHT_DOWN or event == LEFT_DOWN or event == TOP_DOWN or event == BOTTOM_DOWN :
             player.previous_direct = player.direct
@@ -197,11 +201,19 @@ class RunState:
         elif event == BOTTOM_UP:
             RunState.key_able[3] = False
 
+
+        # if not True in RunState.key_able:
+        #     player.run_sound.pause()
+
     def do(player, deltatime):
         player.frame = (player.frame + RunState.FRAMES_PER_ACTION * RunState.ACTION_PER_TIME * deltatime) % RunState.FRAMES_PER_ACTION
         player.locate[0] += player.vector[0] * deltatime
         player.locate[1] += player.vector[1] * deltatime
         player.locate = player.myclamp()
+        if RunState.sound_timer <= 0:
+            player.run_sound.play()
+            RunState.sound_timer = 0.5
+        RunState.sound_timer -= deltatime
 
     def draw(player):
         my_rect_size = SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].w*s_size, SwordAttackState.image[player.direct[0]*10+player.direct[1]][0].h*s_size
@@ -238,6 +250,7 @@ class EvasionState:
 
     def enter(player, event):
         if EvasionState.now_evasion == False:
+            player.evasion_sound.play()
             player.frame = 0
             if player.direct == [0, 0]:
                 player.direct = player.previous_direct
@@ -339,7 +352,8 @@ class SwordAttackState:
 
     def enter(player, event):
         SwordAttackState.monster_hit_table.clear()
-        SwordAttackState.monster_hit_table = [ [False, False, False] for i in range(len(stage.cur_room.get_monsterList()))]
+        if stage.cur_room:
+            SwordAttackState.monster_hit_table = [ [False, False, False] for i in range(len(stage.cur_room.get_monsterList()))]
         if SwordAttackState.now_Atk == False:
 
             # if SwordAttackState.Atk_Stack >= 3:
@@ -388,6 +402,12 @@ class SwordAttackState:
         if frame_integer == 1 or frame_integer == 6 or frame_integer == 10:
             player.locate[0] += player.direct[0] * RUN_SPEED_PPS * deltatime
             player.locate[1] += player.direct[1] * RUN_SPEED_PPS * deltatime
+            if frame_integer == 1:
+                player.atk_sound_1.play()
+            elif frame_integer == 6:
+                player.atk_sound_2.play()
+            elif frame_integer == 10:
+                player.atk_sound_3.play()
 
         if SwordAttackState.Atk_Timer <= 0.0 and SwordAttackState.now_Atk:
             player.add_event(ATK_TIMER)
@@ -792,6 +812,22 @@ class Player(Object, Singleton):
         Player.bounding_box = None
         print(self.locate)
 
+        self.atk_sound_1 = load_wav('sound\EvilWill_sword_01.wav')
+        self.atk_sound_2 = load_wav('sound\EvilWill_sword_02.wav')
+        self.atk_sound_3 = load_wav('sound\EvilWill_sword_03.wav')
+        self.atk_sound_1.set_volume(32)
+        self.atk_sound_2.set_volume(32)
+        self.atk_sound_3.set_volume(32)
+
+        self.potion_sound = load_wav('sound\will_potion_used.wav')       
+        self.potion_sound.set_volume(32) 
+
+        self.run_sound = load_wav('sound\will_step_golem_dungeon.wav')
+        self.run_sound.set_volume(32)
+
+        self.evasion_sound = load_wav('sound\EvilWill_roll.wav')
+        self.evasion_sound.set_volume(20)
+
     def rendering(self):
         self.cur_state.draw(self)
         draw_rectangle(*self.get_rect())
@@ -840,6 +876,7 @@ class Player(Object, Singleton):
             self.health += Inventory.inven_potion.item.value
             self.health = clamp(0, self.health, self.max_health)
             Inventory.inven_potion.PopItem()
+            self.potion_sound.play()
 
     def Check_item_collison(self):
         for item in fieldItem:

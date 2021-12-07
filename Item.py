@@ -3,7 +3,7 @@ from math import sqrt
 from random import randint, random
 from typing import DefaultDict
 from pico2d.pico2d import Image, load_image
-from pico2d.sdl2 import timer
+from pico2d.pico2d import timer
 from modules import PIXEL_PER_METER
 
 Item_Id_Name_Table = { 
