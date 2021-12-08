@@ -76,9 +76,10 @@ class Monster(Object):
         if self.cur_images:
             w, h = self.cur_images[self.direct[0]*10+self.direct[1]][int(self.frame)].w*s_size, self.cur_images[self.direct[0]*10+self.direct[1]][int(self.frame)].h*s_size
             self.cur_images[self.direct[0]*10+self.direct[1]][int(self.frame)].draw_to_origin(self.locate[0], self.locate[1], w, h)
-        draw_rectangle(*self.get_rect())
+        # draw_rectangle(*self.get_rect())
         if self.bounding_box:
-            draw_rectangle(*self.bounding_box)
+            # draw_rectangle(*self.bounding_box)
+            pass
             
 
     def build_behavior_tree(self):

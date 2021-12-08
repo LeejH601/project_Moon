@@ -400,8 +400,8 @@ class SwordAttackState:
 
         frame_integer = player.frame - (player.frame % 1)
         if frame_integer == 1 or frame_integer == 6 or frame_integer == 10:
-            player.locate[0] += player.direct[0] * RUN_SPEED_PPS * deltatime
-            player.locate[1] += player.direct[1] * RUN_SPEED_PPS * deltatime
+            player.locate[0] += player.direct[0] * RUN_SPEED_PPS * deltatime * 0.2
+            player.locate[1] += player.direct[1] * RUN_SPEED_PPS * deltatime * 0.2
             if frame_integer == 1:
                 player.atk_sound_1.play()
             elif frame_integer == 6:
@@ -477,7 +477,8 @@ class SwordAttackState:
             # print('sword place: ', x, y)
             SwordAttackState.sword_image[player.direct[0]*10+player.direct[1]][sword_frame+SwordAttackState.temp].draw_to_origin(x, y,w_w*s_size,w_h*s_size)     
         if Player.bounding_box:
-            draw_rectangle(*Player.bounding_box)
+            # draw_rectangle(*Player.bounding_box)
+            pass
 
     def collider(self, my_rect, b):
         left_a, bottom_a, right_a, top_a = my_rect
@@ -830,7 +831,7 @@ class Player(Object, Singleton):
 
     def rendering(self):
         self.cur_state.draw(self)
-        draw_rectangle(*self.get_rect())
+        # draw_rectangle(*self.get_rect())
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
@@ -867,7 +868,12 @@ class Player(Object, Singleton):
 
     
     def demaged_by_mob(self, value):
-        self.health -= value
+        if self.cur_state == DeffesedRunState or self.cur_state == SwordDeffenseState:
+            self.health -= value/2
+        elif self.cur_state == EvasionState:
+            pass
+        else:
+            self.health -= value
         print("으악!  ---  ", self.health)
 
         

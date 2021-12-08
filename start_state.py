@@ -31,7 +31,7 @@ def update(deltatime):
 def draw():
     global image
     clear_canvas()
-    image.draw(Screen_size[0]/2,Screen_size[1]/2)
+    image.draw(Screen_size[0]/2,Screen_size[1]/2, Screen_size[0], Screen_size[1])
     update_canvas()
 
 

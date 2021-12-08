@@ -308,7 +308,7 @@ class Gate(Object):
         if self.image:
             self.image[0].rotate_draw(self.rad ,*self.locate,Gate.image[0].w*s_size/1.3, Gate.image[0].h*s_size/1.3)
         _rect = self.get_rect()
-        draw_rectangle(*_rect)
+        # draw_rectangle(*_rect)
 
     def get_rect(self):
         return self.locate[0] - 40, self.locate[1] - 40, self.locate[0] + 40, self.locate[1] + 40

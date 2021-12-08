@@ -5,7 +5,7 @@ from Item import *
 from modules import Screen_size
 import Server
 
-RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN, HANDLING_DOWN, HANDLING_UP = range(11)
+RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SPACE, TOP_UP, TOP_DOWN, BOTTOM_UP, BOTTOM_DOWN, HANDLING_DOWN, HANDLING_UP, MAKE_POTION = range(12)
 
 
 key_event_table = {
@@ -19,6 +19,7 @@ key_event_table = {
     (SDL_KEYUP, SDLK_s): BOTTOM_UP,
     (SDL_KEYDOWN, SDLK_j): HANDLING_DOWN,
     (SDL_KEYDOWN, SDLK_k): HANDLING_UP,
+    (SDL_KEYDOWN, SDLK_1): MAKE_POTION,
 }
 
 class Inventory:
@@ -44,6 +45,8 @@ class Inventory:
 
     inven_potion = None
 
+    jelly_count = 0
+
     def __init__(self) -> None:
         
         Inventory.inven_player = [ Item_box(i,0) for i in range(5)]
@@ -53,6 +56,8 @@ class Inventory:
             Inventory.back_image = load_image('sprite\inventory\SpriteAtlasTexture-inventory (Group 2)-1024x1024-fmt25.png')
         if Inventory.slot_effect_image == None:
             Inventory.slot_effect_image = load_image("sprite\inventory\Bag_slot_Affected.png")
+
+        Inventory.jelly_count = 0
 
         test_item1 = Item(10001, Item_Id_Name_Table[10001], 10)
         test_item2 = Item(10002, Item_Id_Name_Table[10002], 10)
@@ -71,6 +76,7 @@ class Inventory:
         Inventory.add_item(test_item3)
 
         Inventory.inven_potion.insertItem(test_item5)
+
         pass
 
 
@@ -117,6 +123,8 @@ class Inventory:
                 Inventory.on_handing_of_item()
             elif key_event == HANDLING_UP:
                 Inventory.down_handing_item()
+            elif key_event == MAKE_POTION:
+                Inventory.make_potion()
 
     
     def move_cursor(self, event):
@@ -130,11 +138,35 @@ class Inventory:
             Inventory.inven_cursor += 5
         Inventory.inven_cursor = Inventory.inven_cursor % 20
 
+
+    def make_potion():
+        if Inventory.gold >= 100 and Inventory.jelly_count >= 5:
+            Inventory.gold -= 100
+            for i in range(5):
+                Inventory.delete_item(10001)
+            Inventory.jelly_count -= 5
+            Inventory.inven_potion.insertItem(Item(20001, Item_Id_Name_Table[20001], 10, 30))
+            Server.player.potion_sound.play()
+
     
     def add_item(item):
         flag, inven_ref = Inventory.check_add_bag_place(item)
         if flag:
             inven_ref.insertItem(item)
+            if item.item_Id == 10001: Inventory.jelly_count += 1
+
+    
+    def delete_item(item_id):
+        for inven in Inventory.inven_player:
+            if inven.item and inven.item.item_Id == item_id:
+                inven.PopItem()
+                return True
+        for inven in Inventory.inven_bag:
+            if inven.item and inven.item.item_Id == item_id:
+                inven.PopItem()
+                return True
+        return False
+
 
 
     def on_handing_of_item():
